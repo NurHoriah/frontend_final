@@ -8,8 +8,8 @@
     <script>
       // Set API URL from environment or fallback to default
       window.API_URL = window.location.hostname === 'localhost'
-        ? 'http://localhost:5004'
-        : 'https://overview-affiliate-satisfactory-proportion.trycloudflare.com';
+    ? 'http://localhost:5004'
+    : 'https://overview-affiliate-satisfactory-proportion.trycloudflare.com';
 
     </script>
     
@@ -527,7 +527,7 @@
     </footer>
 
     <script>
-        const API_BASE = window.API_URL || "https://overview-affiliate-satisfactory-proportion.trycloudflare.com";
+        const API_BASE = window.API_URL || `${window.location.protocol}//${window.location.hostname}:5004`;
 
 
         function checkAuth() {

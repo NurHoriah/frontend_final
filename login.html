@@ -6,6 +6,9 @@
     <title>Login - Sistem Klasifikasi SD Insan Kamil</title>
     <!-- Add Google Sign-In library -->
     <script async defer src="https://accounts.google.com/gsi/client"></script>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Menambahkan SweetAlert2 untuk notifikasi yang lebih jelas -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         * {
             margin: 0;
@@ -258,6 +261,7 @@
             text-decoration: underline;
         }
 
+        /* Fixed message-box styling - hidden by default, only shows when active */
         .message-box {
             text-align: center;
             font-weight: 600;
@@ -265,17 +269,20 @@
             padding: 0.8rem;
             border-radius: 0.5rem;
             font-size: 0.9rem;
-            min-height: 1.2rem;
+            display: none;
+            min-height: auto;
         }
 
         .message-box.error {
             color: #dc2626;
             background-color: #fee2e2;
+            display: block;
         }
 
         .message-box.success {
             color: #16a34a;
             background-color: #dcfce7;
+            display: block;
         }
     </style>
 </head>
@@ -317,7 +324,18 @@
                     />
                 </div>
 
-                <div>
+                <!-- added OTP field for verification -->
+                <div id="otpField" style="display: none;">
+                    <label for="otp">Kode OTP (Cek Email Anda)</label>
+                    <input
+                        type="text"
+                        id="otp"
+                        placeholder="Masukkan 6 digit kode"
+                        maxlength="6"
+                    />
+                </div>
+
+                <div id="emailSection">
                     <label for="email">Email</label>
                     <input
                         type="email"
@@ -327,7 +345,7 @@
                     />
                 </div>
 
-                <div>
+                <div id="passwordSection">
                     <label for="password">Password</label>
                     <input
                         type="password"
@@ -362,37 +380,57 @@
     </div>
 
     <script>
+        const existingToken = localStorage.getItem("access_token");
+        if (existingToken) {
+            window.location.replace("index.html");
+        }
+
         const authForm = document.getElementById("authForm");
         const formTitle = document.getElementById("formTitle");
         const toggleLink = document.getElementById("toggleLink");
         const toggleText = document.getElementById("toggleText");
         const messageBox = document.getElementById("messageBox");
         const nameField = document.getElementById("nameField");
+        const otpField = document.getElementById("otpField");
+        const emailSection = document.getElementById("emailSection");
+        const passwordSection = document.getElementById("passwordSection");
         const submitBtn = document.getElementById("submitBtn");
         const googleSection = document.getElementById("googleSection");
 
         let isLogin = true;
+        let isVerifying = false;
+        let verifyingEmail = "";
 
-        const BACKEND_URL = "http://72.60.78.25:5004";
+        const BACKEND_URL = "https://overview-affiliate-satisfactory-proportion.trycloudflare.com";
+
+
         const GOOGLE_CLIENT_ID = "842122693668-ct0che0nuegv2lk6a5tetv765ib3969o.apps.googleusercontent.com";
 
-        window.handleGoogleLogin = async function(response) {
-            console.log("[v0] Google Sign-In response received");
+        function isValidEmail(email) {
+            const strictRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
             
+            if (!strictRegex.test(email)) return false;
+
+            const blacklistedDomains = ['test.com', 'example.com', 'mailinator.com', 'tempmail.com'];
+            const domain = email.split('@')[1].toLowerCase();
+            
+            if (blacklistedDomains.includes(domain)) {
+                return false;
+            }
+            
+            return true;
+        }
+
+        window.handleGoogleLogin = async function(response) {
             if (!response.credential) {
-                console.log("[v0] No credential in response");
-                messageBox.textContent = "Login dibatalkan atau credential tidak tersedia.";
-                messageBox.className = "message-box error";
+                showMessage("Login dibatalkan atau credential tidak tersedia.", "error");
                 return;
             }
 
-            messageBox.textContent = "Memproses login Google...";
-            messageBox.className = "message-box";
+            showMessage("Memproses login Google...", "");
             submitBtn.disabled = true;
 
             try {
-                console.log("[v0] Sending credential to backend...");
-                
                 const res = await fetch(`${BACKEND_URL}/api/google-login`, {
                     method: "POST",
                     headers: {
@@ -403,37 +441,86 @@
                     }),
                 });
 
-                console.log("[v0] Response status:", res.status);
                 const data = await res.json();
-                console.log("[v0] Response data:", data);
 
                 if (res.ok && data.token) {
-                    localStorage.setItem("token", data.token);
+                    localStorage.setItem("access_token", data.token);
                     localStorage.setItem("user_name", data.user.name);
                     localStorage.setItem("userEmail", data.user.email);
 
-                    messageBox.textContent = "Login Google berhasil!";
-                    messageBox.className = "message-box success";
+                    showMessage("Login Google berhasil!", "success");
 
                     setTimeout(() => {
-                        window.location.href = "index.html";
+                        window.location.href = "./index.html";
+
                     }, 1000);
                 } else {
-                    messageBox.textContent = data.message || "Login Google gagal!";
-                    messageBox.className = "message-box error";
+                    if (res.status === 404) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Akun Tidak Terdaftar',
+                            text: data.message || 'Email Anda belum terdaftar. Silakan lakukan registrasi terlebih dahulu.',
+                            confirmButtonText: 'Daftar Sekarang',
+                            confirmButtonColor: '#ff6b6b'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Pindah ke tab register secara otomatis
+                                toggleLink.click();
+                            }
+                        });
+                    } else {
+                        showMessage(data.message || "Login Google gagal!", "error");
+                    }
                     submitBtn.disabled = false;
+                    setLoading(false);
                 }
             } catch (error) {
-                console.log("[v0] Google login error:", error);
-                messageBox.textContent = "Koneksi ke server gagal! Pastikan backend running di " + BACKEND_URL;
-                messageBox.className = "message-box error";
+                showMessage("Koneksi ke server gagal! Pastikan backend running di " + BACKEND_URL, "error");
                 submitBtn.disabled = false;
             }
         };
 
+        function showMessage(text, type) {
+            if (type === "success") {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: text,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else if (type === "error") {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: text
+                });
+            } else {
+                messageBox.textContent = text;
+                messageBox.className = "message-box";
+                messageBox.style.display = "block";
+            }
+        }
+
+        function clearMessage() {
+            messageBox.textContent = "";
+            messageBox.className = "message-box";
+            messageBox.style.display = "none";
+        }
+
+        function setLoading(isLoading) {
+            submitBtn.disabled = isLoading;
+            if (isLoading) {
+                submitBtn.textContent = "Loading...";
+            } else {
+                submitBtn.textContent = isLogin ? "Masuk" : (isVerifying ? "Verifikasi OTP" : "Daftar");
+            }
+        }
+
         toggleLink.addEventListener("click", (e) => {
             e.preventDefault();
             isLogin = !isLogin;
+            isVerifying = false;
             formTitle.textContent = isLogin ? "Login" : "Register";
             submitBtn.textContent = isLogin ? "Masuk" : "Daftar";
             toggleText.textContent = isLogin
@@ -441,98 +528,139 @@
                 : "Sudah punya akun?";
             toggleLink.textContent = isLogin ? "Daftar" : "Login";
             nameField.style.display = isLogin ? "none" : "block";
+            otpField.style.display = "none";
+            emailSection.style.display = "block";
+            passwordSection.style.display = "block";
+            document.getElementById("email").required = true;
+            document.getElementById("password").required = true;
             googleSection.style.display = isLogin ? "block" : "none";
-            messageBox.textContent = "";
+            clearMessage();
         });
 
         authForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
+            
+            setLoading(true);
+            clearMessage();
+            try {
+                if (isVerifying) {
+                    const otp = document.getElementById("otp").value.trim();
+                    if (!otp) {
+                        showMessage("Masukkan kode OTP!", "error");
+                        setLoading(false);
+                        return;
+                    }
 
-            submitBtn.disabled = true;
+                    const response = await fetch(`${BACKEND_URL}/api/verify-otp`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: verifyingEmail, otp }),
+                    });
 
-            if (isLogin) {
-                try {
+                    const data = await response.json();
+                    if (response.ok) {
+                        showMessage("Email berhasil diverifikasi! Silakan login.", "success");
+                        setTimeout(() => {
+                            isVerifying = false;
+                            isLogin = true;
+                            formTitle.textContent = "Login";
+                            submitBtn.textContent = "Masuk";
+                            submitBtn.disabled = false;
+                            otpField.style.display = "none";
+                            emailSection.style.display = "block";
+                            passwordSection.style.display = "block";
+                            nameField.style.display = "none";
+                            googleSection.style.display = "block";
+                            toggleText.textContent = "Belum punya akun?";
+                            toggleLink.textContent = "Daftar";
+                        }, 1500);
+                    } else {
+                        showMessage(data.message, "error");
+                        setLoading(false);
+                    }
+                } else if (isLogin) {
+                    const email = document.getElementById("email").value.trim();
+                    const password = document.getElementById("password").value.trim();
+
+                    if (!email || !password) {
+                        showMessage("Email dan password harus diisi!", "error");
+                        setLoading(false);
+                        return;
+                    }
+
+                    if (!isValidEmail(email)) {
+                        showMessage("Format email tidak valid!", "error");
+                        setLoading(false);
+                        return;
+                    }
+
                     const response = await fetch(`${BACKEND_URL}/api/login`, {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
+                        headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email, password }),
                     });
 
                     const data = await response.json();
-
-                    if (response.ok) {
-                        localStorage.setItem("token", data.token);
+                    if (response.ok && data.token) {
+                        localStorage.setItem("access_token", data.token);
                         localStorage.setItem("user_name", data.user.name);
                         localStorage.setItem("userEmail", data.user.email);
 
-                        messageBox.textContent = "Login berhasil!";
-                        messageBox.className = "message-box success";
-
+                        showMessage("Login berhasil!", "success");
                         setTimeout(() => {
-                            window.location.href = "index.html";
+                            window.location.href = "./index.html";
                         }, 1000);
                     } else {
-                        messageBox.textContent = data.message || "Email atau password salah!";
-                        messageBox.className = "message-box error";
-                        submitBtn.disabled = false;
+                        showMessage(data.message || "Login gagal!", "error");
+                        setLoading(false);
                     }
-                } catch (error) {
-                    console.log("[v0] Login error:", error);
-                    messageBox.textContent = "Koneksi ke server gagal! Pastikan backend running di " + BACKEND_URL;
-                    messageBox.className = "message-box error";
-                    submitBtn.disabled = false;
-                }
-            } else {
-                const name = document.getElementById("name").value.trim();
-                if (!name) {
-                    messageBox.textContent = "Nama guru wajib diisi!";
-                    messageBox.className = "message-box error";
-                    submitBtn.disabled = false;
-                    return;
-                }
+                } else {
+                    const name = document.getElementById("name").value.trim();
+                    const email = document.getElementById("email").value.trim();
+                    const password = document.getElementById("password").value.trim();
 
-                try {
+                    if (!name || !email || !password) {
+                        showMessage("Semua field harus diisi!", "error");
+                        setLoading(false);
+                        return;
+                    }
+
+                    if (!isValidEmail(email)) {
+                        showMessage("Format email tidak valid!", "error");
+                        setLoading(false);
+                        return;
+                    }
+
+                    if (password.length < 6) {
+                        showMessage("Password minimal 6 karakter!", "error");
+                        setLoading(false);
+                        return;
+                    }
+
                     const response = await fetch(`${BACKEND_URL}/api/register`, {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
+                        headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ name, email, password }),
                     });
 
                     const data = await response.json();
-
                     if (response.ok) {
-                        messageBox.textContent = "Pendaftaran berhasil! Silakan login.";
-                        messageBox.className = "message-box success";
-
-                        setTimeout(() => {
-                            isLogin = true;
-                            formTitle.textContent = "Login";
-                            submitBtn.textContent = "Masuk";
-                            toggleText.textContent = "Belum punya akun?";
-                            toggleLink.textContent = "Daftar";
-                            nameField.style.display = "none";
-                            googleSection.style.display = "block";
-                            messageBox.textContent = "";
-                            authForm.reset();
-                            submitBtn.disabled = false;
-                        }, 1500);
+                        showMessage("Registrasi berhasil! Cek email untuk verifikasi.", "success");
+                        verifyingEmail = email;
+                        isVerifying = true;
+                        nameField.style.display = "none";
+                        emailSection.style.display = "none";
+                        passwordSection.style.display = "none";
+                        otpField.style.display = "block";
+                        submitBtn.textContent = "Verifikasi OTP";
                     } else {
-                        messageBox.textContent = data.message || "Pendaftaran gagal!";
-                        messageBox.className = "message-box error";
-                        submitBtn.disabled = false;
+                        showMessage(data.message || "Registrasi gagal!", "error");
+                        setLoading(false);
                     }
-                } catch (error) {
-                    console.log("[v0] Register error:", error);
-                    messageBox.textContent = "Koneksi ke server gagal! Pastikan backend running di " + BACKEND_URL;
-                    messageBox.className = "message-box error";
-                    submitBtn.disabled = false;
                 }
+            } catch (error) {
+                showMessage("Koneksi gagal! Pastikan backend running di " + BACKEND_URL, "error");
+                setLoading(false);
             }
         });
     </script>
