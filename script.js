@@ -17,7 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===============================
   // KONFIGURASI API (pakai environment variable)
   // ===============================
-  const BACKEND_URL = window.BACKEND_URL || "http://72.60.78.25:5004"
+ const BACKEND_URL = "https://overview-affiliate-satisfactory-proportion.trycloudflare.com";
+
+
   console.log("[INFO] Using API URL:", BACKEND_URL)
 
   // ===============================
@@ -132,7 +134,9 @@ document.addEventListener("DOMContentLoaded", () => {
       0.15 * norm(payload.indeks_non_eksakta)
 
     const auditori =
-      0.35 * norm(payload.mengingat_suara) + 0.2 * norm(payload.ekskul_musik) + 0.1 * norm(payload.nilai_bahasa)
+      0.35 * norm(payload.mengingat_suara) +
+      0.2 * norm(payload.ekskul_musik) +
+      0.1 * norm(payload.nilai_bahasa)
 
     const kinestetik =
       0.3 * norm(payload.suka_praktik) +
