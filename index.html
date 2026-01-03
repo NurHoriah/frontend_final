@@ -1,0 +1,1348 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Klasifikasi Tipe Karakter Belajar - SD Insan Kamil</title>
+    
+    <script>
+      // Set API URL from environment or fallback to default
+      window.API_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost:5004'
+        : 'https://overview-affiliate-satisfactory-proportion.trycloudflare.com';
+
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Tambahkan library SheetJS untuk membaca Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-light': '#E3F2FD',
+                        'primary-blue': '#4FC3F7',
+                        'primary-dark': '#0288D1',
+                        'text-dark': '#1f2937',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    
+    <style>
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -10;
+            background-color: #E3F2FD; 
+        }
+
+        .floating-icon {
+            position: absolute;
+            font-size: 2rem;
+            animation: float-up 20s infinite linear;
+            opacity: 0.5;
+            color: rgba(79, 195, 247, 0.4);
+        }
+
+        .floating-icon:nth-child(1) { left: 5%; animation-duration: 15s; animation-delay: 0s; font-size: 2rem; }
+        .floating-icon:nth-child(2) { left: 15%; animation-duration: 25s; animation-delay: 2s; font-size: 3rem; }
+        .floating-icon:nth-child(3) { left: 25%; animation-duration: 18s; animation-delay: 4s; font-size: 1.5rem; }
+        .floating-icon:nth-child(4) { left: 35%; animation-duration: 22s; animation-delay: 6s; font-size: 2.5rem; }
+        .floating-icon:nth-child(5) { left: 45%; animation-duration: 17s; animation-delay: 8s; font-size: 3.5rem; }
+        .floating-icon:nth-child(6) { left: 55%; animation-duration: 20s; animation-delay: 10s; font-size: 2rem; }
+        .floating-icon:nth-child(7) { left: 65%; animation-duration: 16s; animation-delay: 12s; font-size: 3rem; }
+        .floating-icon:nth-child(8) { left: 75%; animation-duration: 28s; animation-delay: 1s; font-size: 2.2rem; }
+        .floating-icon:nth-child(9) { left: 85%; animation-duration: 19s; animation-delay: 3s; font-size: 1.8rem; }
+        .floating-icon:nth-child(10) { left: 95%; animation-duration: 23s; animation-delay: 5s; font-size: 2.7rem; }
+        .floating-icon:nth-child(11) { left: 2%; animation-duration: 14s; animation-delay: 7s; font-size: 3.2rem; }
+        .floating-icon:nth-child(12) { left: 18%; animation-duration: 21s; animation-delay: 9s; font-size: 2.1rem; }
+        .floating-icon:nth-child(13) { left: 40%; animation-duration: 13s; animation-delay: 11s; font-size: 1.6rem; }
+        .floating-icon:nth-child(14) { left: 70%; animation-duration: 26s; animation-delay: 13s; font-size: 3.4rem; }
+        .floating-icon:nth-child(15) { left: 92%; animation-duration: 18s; animation-delay: 14s; font-size: 2.9rem; }
+        
+        @keyframes float-up {
+            0% { transform: translateY(100vh) scale(0.8) rotate(0deg); opacity: 0.5; }
+            50% { opacity: 0.7; }
+            100% { transform: translateY(-10vh) scale(1.2) rotate(360deg); opacity: 0; }
+        }
+
+        /* Improved responsive form grid with better mobile layout */
+        .form-grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: 1fr;
+        }
+        @media (min-width: 640px) {
+            .form-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 639px) {
+            .form-grid {
+                gap: 1rem;
+            }
+        }
+
+        /* CSV Import Styles */
+        .tab-btn.active {
+            background-color: #4FC3F7; /* primary-blue */
+            color: white;
+        }
+        .tab-btn:not(.active) {
+            background-color: #e5e7eb; /* gray-200 */
+            color: #374151; /* gray-700 */
+        }
+        .tab-content {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .tab-content.hidden {
+            opacity: 0;
+            transform: translateX(-20px);
+            pointer-events: none;
+        }
+        .tab-content.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        #csv-drop-zone {
+            cursor: pointer;
+        }
+        .pill {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            background-color: #E3F2FD; /* primary-light */
+            color: #0288D1; /* primary-dark */
+            border-radius: 9999px; /* rounded-full */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 600;
+        }
+
+        /* Mobile optimization for floating icons */
+        @media (max-width: 768px) {
+            .floating-icon {
+                font-size: 1rem;
+                opacity: 0.3;
+            }
+            .floating-icon:nth-child(1) { font-size: 1rem; }
+            .floating-icon:nth-child(2) { font-size: 1.5rem; }
+            .floating-icon:nth-child(3) { font-size: 0.8rem; }
+            .floating-icon:nth-child(4) { font-size: 1.2rem; }
+            .floating-icon:nth-child(5) { font-size: 1.8rem; }
+            .floating-icon:nth-child(6) { font-size: 1rem; }
+            .floating-icon:nth-child(7) { font-size: 1.5rem; }
+            .floating-icon:nth-child(8) { font-size: 1.1rem; }
+            .floating-icon:nth-child(9) { font-size: 0.9rem; }
+            .floating-icon:nth-child(10) { font-size: 1.3rem; }
+            .floating-icon:nth-child(11) { font-size: 1.6rem; }
+            .floating-icon:nth-child(12) { font-size: 1.05rem; }
+            .floating-icon:nth-child(13) { font-size: 0.8rem; }
+            .floating-icon:nth-child(14) { font-size: 1.7rem; }
+            .floating-icon:nth-child(15) { font-size: 1.45rem; }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans text-text-dark">
+    <!-- Animasi Background -->
+    <div class="animated-bg">
+        <div class="floating-icon">💡</div>
+        <div class="floating-icon">🎧</div>
+        <div class="floating-icon">🏃</div>
+        <div class="floating-icon">📚</div>
+        <div class="floating-icon">🎶</div>
+        <div class="floating-icon">🧠</div>
+        <div class="floating-icon">✏️</div>
+        <div class="floating-icon">📣</div>
+        <div class="floating-icon">🎨</div>
+        <div class="floating-icon">⚽</div>
+        <div class="floating-icon">🔬</div>
+        <div class="floating-icon">💬</div>
+        <div class="floating-icon">🤸</div>
+        <div class="floating-icon">📐</div>
+        <div class="floating-icon">📝</div>
+    </div>
+
+    <!-- Improved responsive header with better mobile layout -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 flex flex-row items-center justify-between gap-3 md:gap-4">
+            <div class="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                <div class="flex items-center space-x-2 flex-shrink-0">
+                    <img src="assets/logo.png" alt="Logo INKA" class="w-8 sm:w-10 h-8 sm:h-10 object-contain">
+                </div>
+                <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                    <div class="flex flex-col min-w-0 flex-1">
+                        <h1 class="text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-primary-dark truncate">
+                            Sistem Klasifikasi Tipe Karakter
+                        </h1>
+                        <p class="text-xs text-gray-500">SD Insan Kamil | ML (SVM)</p>
+                    </div>
+                    <!-- Pindahkan user greeting ke samping judul -->
+                    <p class="text-xs sm:text-sm text-gray-700 flex-shrink-0 whitespace-nowrap">
+                        Selamat Datang, <span id="teacherName" class="font-bold text-primary-dark">-</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Logout button tetap di kanan, tidak membungkus lagi -->
+            <button id="logoutBtn" class="flex items-center justify-center gap-1 sm:gap-2 bg-primary-blue text-white hover:bg-primary-dark transition duration-300 px-2 sm:px-3 md:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold shadow-md flex-shrink-0 leading-none">
+                <i data-lucide='log-out' class='w-3 sm:w-4 h-3 sm:h-4'></i><span class="hidden sm:inline">Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero section with improved mobile responsive image and text sizing -->
+    <section class="py-6 sm:py-8 lg:py-10">
+        <div class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row items-center bg-white/90 backdrop-blur-sm p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue gap-4 sm:gap-6 lg:gap-10">
+                
+                <div class="hero-copy lg:w-1/2 w-full">
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-dark mb-3 sm:mb-4">
+                        Kenali Gaya Belajar: Visual, Auditori, atau Kinestetik
+                    </h2>
+                    <p class="text-sm sm:text-base lg:text-lg text-gray-700 leading-relaxed">
+                        Masukkan identitas dan nilai akademik & non-akademik siswa, lalu
+                        klik Analisis. Hasil akan menampilkan tipe belajar dominan,
+                        penjelasan, serta saran bermanfaat untuk pengajaran yang lebih personal.
+                    </p>
+                </div>
+
+                <div class="lg:w-1/2 w-full">
+                    <div class="relative rounded-lg sm:rounded-xl overflow-hidden shadow-lg transition duration-500 hover:scale-[1.02] transform">
+                        <img 
+                            src="assets/inka.png" 
+                            alt="Banner Klasifikasi Siswa" 
+                            class="w-full h-48 sm:h-64 lg:h-80 object-cover"
+                        />
+                        <div class="absolute inset-0 bg-blue-200/20"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main content with improved responsive padding and tab buttons -->
+    <main class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mb-12 sm:mb-16">
+        <!-- Tab buttons with improved mobile responsive layout -->
+        <div class="flex gap-2 sm:gap-3 mb-4 sm:mb-6 flex-wrap">
+            <button id="tab-manual" class="tab-btn active flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-primary-blue text-white rounded-lg font-semibold hover:bg-primary-dark transition text-xs sm:text-sm">
+                <i data-lucide="edit-3" class="w-4 sm:w-5 h-4 sm:h-5"></i> <span class="hidden sm:inline">Input</span> Manual
+            </button>
+            <!-- Ubah label tab dari "Import CSV" ke "Import File" -->
+            <button id="tab-csv" class="tab-btn flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition text-xs sm:text-sm">
+                <i data-lucide="upload" class="w-4 sm:w-5 h-4 sm:h-5"></i> <span class="hidden sm:inline">Import</span> CSV/Excel
+            </button>
+        </div>
+
+        <!-- Form Utama (Manual Input) -->
+        <form id="analyzer-form" class="bg-white p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue tab-content active" novalidate>
+            <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
+                <i data-lucide="user-check" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Data Siswa
+            </h3>
+            <div class="form-grid">
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Nama Siswa</span>
+                    <input
+                        type="text"
+                        id="nama_siswa"
+                        placeholder="Masukkan nama lengkap"
+                        required
+                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm"
+                    />
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Kelas</span>
+                    <input type="text" id="kelas" placeholder="Contoh: 4A" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm" />
+                </label>
+            </div>
+
+            <h3 class="text-xl sm:text-2xl font-bold mt-6 sm:mt-10 mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
+                <i data-lucide="award" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Kriteria Akademik (Nilai 0-100)
+            </h3>
+            <div class="form-grid">
+                <label class="block"><span class="text-sm text-gray-700 font-medium mb-1 block">Nilai Bahasa Indonesia</span>
+                    <input type="number" id="nilai_bahasa" min="0" max="100" placeholder="0 - 100" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm" />
+                </label>
+                <label class="block"><span class="text-sm text-gray-700 font-medium mb-1 block">Nilai Matematika</span>
+                    <input type="number" id="nilai_mtk" min="0" max="100" placeholder="0 - 100" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm" />
+                </label>
+                <label class="block"><span class="text-sm text-gray-700 font-medium mb-1 block">Nilai IPA</span>
+                    <input type="number" id="nilai_ipa" min="0" max="100" placeholder="0 - 100" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm" />
+                </label>
+                <label class="block"><span class="text-sm text-gray-700 font-medium mb-1 block">Nilai IPS</span>
+                    <input type="number" id="nilai_ips" min="0" max="100" placeholder="0 - 100" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm" />
+                </label>
+                
+                <label class="block bg-primary-light p-2 sm:p-3 rounded-lg border border-primary-blue/50">
+                    <span class="text-primary-dark font-medium mb-1 block text-sm">Rata-rata Umum</span>
+                    <input type="number" id="rata_rata_umum" readonly class="w-full px-3 sm:px-4 py-2 border border-primary-blue/80 bg-white rounded-lg font-semibold text-primary-dark text-sm" />
+                </label>
+                <label class="block bg-primary-light p-2 sm:p-3 rounded-lg border border-primary-blue/50">
+                    <span class="text-primary-dark font-medium mb-1 block text-sm">Indeks Eksakta (MTK & IPA)</span>
+                    <input type="number" id="indeks_eksakta" readonly class="w-full px-3 sm:px-4 py-2 border border-primary-blue/80 bg-white rounded-lg font-semibold text-primary-dark text-sm" />
+                </label>
+                <label class="block bg-primary-light p-2 sm:p-3 rounded-lg border border-primary-blue/50">
+                    <span class="text-primary-dark font-medium mb-1 block text-sm">Indeks Non-Eksakta (B. Ind & IPS)</span>
+                    <input type="number" id="indeks_non_eksakta" readonly class="w-full px-3 sm:px-4 py-2 border border-primary-blue/80 bg-white rounded-lg font-semibold text-primary-dark text-sm" />
+                </label>
+            </div>
+
+            <h3 class="text-xl sm:text-2xl font-bold mt-6 sm:mt-10 mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
+                <i data-lucide="hand-metal" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Kriteria Non-Akademik (Skala 1-5)
+            </h3>
+            <div class="form-grid">
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Daya Visual / Gambar</span>
+                    <select id="daya_visual_gambar" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Mengingat Lewat Suara (Auditori)</span>
+                    <select id="mengingat_suara" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Suka Praktik / Hands-on (Kinestetik)</span>
+                    <select id="suka_praktik" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Suka Membaca / Mencatat (Visual)</span>
+                    <select id="suka_membaca_mencatat" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Ekskul Motorik (Kinestetik)</span>
+                    <select id="ekskul_motorik" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Ekskul Musik (Auditori)</span>
+                    <select id="ekskul_musik" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+            </div>
+
+            <!-- Action buttons with improved mobile responsive layout -->
+            <div class="actions mt-6 sm:mt-10 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:space-y-0">
+                <button type="button" id="analyzeBtn" class="bg-primary-blue text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-primary-dark transition duration-300 transform hover:scale-[1.02] flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
+                    <i data-lucide="zap" class="w-4 sm:w-5 h-4 sm:h-5"></i> Analisis Tipe Karakter
+                </button>
+                <button type="button" id="resetBtn" class="bg-gray-200 text-gray-700 font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl hover:bg-gray-300 transition text-sm sm:text-base flex items-center justify-center gap-2 sm:gap-1">
+                    <i data-lucide="rotate-ccw" class="w-4 sm:w-5 h-4 sm:h-5"></i> Reset
+                </button>
+            </div>
+        </form>
+
+        <!-- CSV/Excel Import Section -->
+        <div id="csv-import-section" class="bg-white p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue tab-content hidden">
+            <!-- Ubah judul section -->
+            <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
+                <i data-lucide="upload-cloud" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Import Data Siswa dari CSV/Excel
+            </h3>
+            
+            <!-- Update instruksi format file -->
+            <div class="bg-blue-50 border-l-4 border-primary-blue p-4 mb-4 sm:mb-6 rounded text-sm">
+                <p class="text-sm text-gray-700 mb-2 font-semibold">Format file yang didukung: <span class="text-primary-dark">.csv, .xlsx, .xls</span></p>
+                <div class="overflow-x-auto">
+                    <p class="text-xs text-gray-600 font-mono whitespace-nowrap">
+                        Kolom yang diperlukan: nama_siswa, kelas, nilai_bahasa, nilai_mtk, nilai_ipa, nilai_ips, 
+                        daya_visual_gambar, mengingat_suara, suka_praktik, 
+                        suka_membaca_mencatat, ekskul_motorik, ekskul_musik
+                    </p>
+                </div>
+                <p class="text-xs text-gray-500 mt-2 italic">
+                    💡 Kolom rata_rata_umum, indeks_eksakta, dan indeks_non_eksakta akan dihitung otomatis
+                </p>
+                <div class="flex gap-3 mt-3 flex-wrap">
+                    <a href="#" id="download-template" class="text-primary-blue underline hover:text-primary-dark font-medium text-xs">
+                        📥 Unduh template CSV
+                    </a>
+                    <!-- Tambahkan tombol download template Excel -->
+                    <a href="#" id="download-template-excel" class="text-green-600 underline hover:text-green-800 font-medium text-xs">
+                        📥 Unduh template Excel
+                    </a>
+                </div>
+            </div>
+
+            <label class="block mb-4 sm:mb-6">
+                <!-- Update label dan accept attribute untuk mendukung Excel -->
+                <span class="text-gray-700 font-medium mb-2 sm:mb-3 block text-sm">Pilih File CSV atau Excel</span>
+                <div class="border-2 border-dashed border-primary-blue rounded-lg p-4 sm:p-8 text-center hover:bg-blue-50 transition" id="csv-drop-zone">
+                    <i data-lucide="file-up" class="w-8 sm:w-12 h-8 sm:h-12 mx-auto text-primary-blue mb-2 sm:mb-3"></i>
+                    <p class="text-gray-700 font-semibold text-sm sm:text-base">Drag & drop file di sini atau klik untuk memilih</p>
+                    <p class="text-xs text-gray-500 mt-1">Format: .csv, .xlsx, .xls</p>
+                    <!-- Update accept untuk menerima CSV dan Excel -->
+                    <input 
+                        type="file" 
+                        id="csv-file" 
+                        accept=".csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" 
+                        class="hidden"
+                    />
+                </div>
+            </label>
+            
+            <!-- Tampilkan nama file yang dipilih -->
+            <div id="selected-file-info" class="mb-3 sm:mb-4 hidden">
+                <p class="text-sm text-gray-600">File dipilih: <span id="selected-file-name" class="font-semibold text-primary-dark"></span></p>
+            </div>
+
+            <div id="csv-preview" class="mb-4 sm:mb-6 hidden">
+                <h4 class="font-bold text-gray-700 mb-2 sm:mb-3 flex items-center gap-1">
+                    <i data-lucide="eye" class="w-4 h-4"></i> Preview Data (<span id="preview-count">0</span> baris)
+                </h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm border-collapse border border-gray-300">
+                        <thead class="bg-gray-100">
+                            <tr id="preview-header"></tr>
+                        </thead>
+                        <tbody id="preview-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex gap-2 sm:gap-3">
+                <button type="button" id="csv-upload-btn" class="bg-primary-dark text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-primary-blue transition flex items-center gap-1 sm:gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">
+                    <i data-lucide="send" class="w-4 sm:w-5 h-4 sm:h-5"></i> Upload & Analisis
+                </button>
+                <button type="button" id="csv-reset-btn" class="bg-gray-200 text-gray-700 font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl hover:bg-gray-300 transition text-sm sm:text-base">
+                    Reset
+                </button>
+            </div>
+
+            <div id="csv-progress" class="mt-4 sm:mt-6 hidden">
+                <p class="text-sm text-gray-700 mb-1 sm:mb-2">Progress: <span id="csv-progress-text">0%</span></p>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="csv-progress-bar" class="bg-primary-blue h-2 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div id="csv-result-message" class="mt-4 sm:mt-6 hidden p-3 sm:p-4 rounded-lg text-sm"></div>
+        </div>
+
+        <!-- Hasil Analisis -->
+        <section id="result" class="bg-white p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-dark mt-8" hidden>
+            <h3 class="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-primary-dark flex items-center">
+                <i data-lucide="bar-chart-3" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3"></i> Hasil Analisis
+            </h3>
+            <div class="mb-3 sm:mb-4">
+                <span id="result-label" class="inline-block px-3 sm:px-4 py-1 text-lg font-bold rounded-full bg-primary-light text-primary-dark shadow-inner"></span>
+            </div>
+            <p id="result-explanation" class="text-sm sm:text-base text-gray-700 leading-relaxed mb-4 sm:mb-6 border-l-4 border-gray-200 pl-3 sm:pl-4 italic"></p>
+            
+            <h4 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-primary-dark flex items-center">
+                <i data-lucide="book-open" class="w-4 sm:w-5 h-4 sm:h-5 mr-2"></i> Saran Belajar
+            </h4>
+            <ul id="result-tips" class="tips-list space-y-1 sm:space-y-2 pl-4 sm:pl-5 text-sm sm:text-base text-gray-700"></ul>
+
+            <div id="result-probs" class="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-100 rounded-lg text-sm font-mono"></div>
+
+            <!-- Filter section for download -->
+            <div class="mt-6 sm:mt-8 p-4 sm:p-6 bg-blue-50 rounded-lg sm:rounded-xl border-l-4 border-primary-blue">
+                <h4 class="font-bold text-primary-dark mb-3 sm:mb-4 flex items-center gap-1">
+                    <i data-lucide="filter" class="w-4 h-4"></i> Filter Data Sebelum Unduh
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4">
+                    <label class="block">
+                        <span class="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">Filter Tanggal (Opsional)</span>
+                        <input type="date" id="filterDate" class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue text-xs sm:text-sm" />
+                    </label>
+                    <label class="block">
+                        <span class="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">Filter Kelas (Opsional)</span>
+                        <input type="text" id="filterClass" placeholder="Contoh: 4A" class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue text-xs sm:text-sm" />
+                    </label>
+                    <label class="block md:col-span-2">
+                        <span class="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">Rentang Tanggal (Opsional)</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="date" id="filterDateFrom" placeholder="Dari" class="px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue text-xs sm:text-sm" />
+                            <input type="date" id="filterDateTo" placeholder="Sampai" class="px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue text-xs sm:text-sm" />
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Tombol Unduh -->
+            <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:space-y-0">
+                <button id="downloadResult" class="bg-primary-dark text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-primary-blue transition duration-300 flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
+                    <i data-lucide="download" class="w-4 sm:w-5 h-4 sm:h-5"></i> Unduh Hasil Saat Ini (CSV)
+                </button>
+                <button id="downloadAllResultsCSV" class="bg-primary-blue text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-primary-dark transition duration-300 flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
+                    <i data-lucide="file-text" class="w-4 sm:w-5 h-4 sm:h-5"></i> Unduh Semua (CSV)
+                </button>
+                <button id="downloadAllResultsExcel" class="bg-green-600 text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-green-700 transition duration-300 flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
+                    <i data-lucide="file-spreadsheet" class="w-4 sm:w-5 h-4 sm:h-5"></i> Unduh Semua (Excel)
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-primary-dark text-white mt-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-5 text-center">
+            <p class="text-sm">
+                © Khoriyah07 — Sistem Klasifikasi Tipe Karakter Belajar Siswa
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE = window.API_URL || "https://overview-affiliate-satisfactory-proportion.trycloudflare.com";
+
+
+        function checkAuth() {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                window.location.href = "login.html";
+                return false;
+            }
+            return token;
+        }
+
+        function loadUserInfo() {
+            const userName = localStorage.getItem("user_name") || "Guru";
+            document.getElementById("teacherName").textContent = userName;
+        }
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("user_name");
+            window.location.href = "login.html";
+        });
+
+        // Initialize on page load
+        window.addEventListener("load", () => {
+            checkAuth();
+            loadUserInfo();
+        });
+
+        // ===== FIELD NUMERIK =====
+        const fields = [
+            "nilai_bahasa", "nilai_mtk", "nilai_ipa", "nilai_ips",
+            "rata_rata_umum", "indeks_eksakta", "indeks_non_eksakta",
+            "daya_visual_gambar", "mengingat_suara", "suka_praktik",
+            "suka_membaca_mencatat", "ekskul_motorik", "ekskul_musik",
+        ];
+
+        // ===== AUTO HITUNG RATA-RATA & INDEKS =====
+        ;["nilai_bahasa", "nilai_mtk", "nilai_ipa", "nilai_ips"].forEach((id) => {
+            document.getElementById(id).addEventListener("input", updateCalculatedFields);
+        });
+
+        function updateCalculatedFields() {
+            const b = +document.getElementById("nilai_bahasa").value || 0;
+            const m = +document.getElementById("nilai_mtk").value || 0;
+            const i = +document.getElementById("nilai_ipa").value || 0;
+            const s = +document.getElementById("nilai_ips").value || 0;
+
+            const avg = (b + m + i + s) / 4;
+            document.getElementById("rata_rata_umum").value = Math.round(avg);
+
+            const eksakta = (m + i) / 2;
+            document.getElementById("indeks_eksakta").value = Math.round(eksakta);
+
+            const nonEksakta = (b + s) / 2;
+            document.getElementById("indeks_non_eksakta").value = Math.round(nonEksakta);
+        }
+
+        // ===== BUAT PAYLOAD =====
+        function getPayload() {
+            const payload = {};
+            payload.nama_siswa = document.getElementById("nama_siswa").value || "";
+            payload.kelas = document.getElementById("kelas").value || "";
+
+            for (const k of fields) {
+                const el = document.getElementById(k);
+                payload[k] = el && el.value !== "" ? Number(el.value) : 0;
+            }
+            return payload;
+        }
+
+        // ===== TAMPILKAN HASIL =====
+        function renderResult(data) {
+            const nama = document.getElementById("nama_siswa").value || "Siswa";
+            const kelas = document.getElementById("kelas").value || "-";
+            const resultLabel = document.getElementById("result-label");
+            const resultExplanation = document.getElementById("result-explanation");
+            const resultTips = document.getElementById("result-tips");
+            const resultProbs = document.getElementById("result-probs");
+            const resultEl = document.getElementById("result");
+
+            // Display prediction label
+            resultLabel.textContent = `${data.label || data.prediction || '-'}`;
+            resultExplanation.textContent = data.explanation || `Siswa ${nama} adalah tipe belajar ${data.label || data.prediction}.`;
+
+            // Display tips
+            resultTips.innerHTML = "";
+            const tipsArray = data.tips || [];
+            if (tipsArray.length > 0) {
+                tipsArray.forEach((tip) => {
+                    const li = document.createElement("li");
+                    li.textContent = tip;
+                    resultTips.appendChild(li);
+                });
+            } else {
+                const li = document.createElement("li");
+                li.textContent = "Tidak ada saran khusus untuk tipe belajar ini.";
+                resultTips.appendChild(li);
+            }
+
+            // Display probability distribution
+            resultProbs.innerHTML = "";
+            if (data.probabilities && typeof data.probabilities === 'object') {
+                const order = ["Visual", "Auditori", "Kinestetik", "Read/Write"]; // Keep original order if possible
+                // Sort keys based on probability for better display if order is not fixed
+                const sortedProbKeys = Object.keys(data.probabilities).sort((a, b) => data.probabilities[b] - data.probabilities[a]);
+                
+                sortedProbKeys.forEach((k) => {
+                    const v = data.probabilities[k] ?? 0;
+                    if (v > 0.01) { // Only show if probability is significant
+                        const pill = document.createElement("span");
+                        pill.className = "pill";
+                        pill.style.marginRight = "8px";
+                        pill.textContent = `${k}: ${(v * 100).toFixed(1)}%`;
+                        resultProbs.appendChild(pill);
+                    }
+                });
+            }
+
+            resultEl.hidden = false;
+        }
+
+        // ===== BACKUP LOCAL COMPUTE =====
+        function localCompute(payload) {
+            const norm = (v) => Math.max(0, Math.min(100, v)) / 100;
+
+            const visual_score =
+                0.25 * norm(payload.daya_visual_gambar * 20) +
+                0.2 * norm(payload.suka_membaca_mencatat * 20) +
+                0.1 * norm(payload.nilai_ips) +
+                0.05 * norm(payload.nilai_bahasa) +
+                0.15 * norm(payload.indeks_non_eksakta);
+
+            const auditori_score =
+                0.35 * norm(payload.mengingat_suara * 20) +
+                0.2 * norm(payload.ekskul_musik * 20) +
+                0.1 * norm(payload.nilai_bahasa);
+
+            const kinestetik_score =
+                0.3 * norm(payload.suka_praktik * 20) +
+                0.2 * norm(payload.ekskul_motorik * 20) +
+                0.1 * norm(payload.nilai_mtk) +
+                0.1 * norm(payload.nilai_ipa) +
+                0.15 * norm(payload.indeks_eksakta);
+
+            const sum = visual_score + auditori_score + kinestetik_score || 1;
+            const probs = {
+                Visual: visual_score / sum,
+                Auditori: auditori_score / sum,
+                Kinestetik: kinestetik_score / sum,
+            };
+
+            const best = Object.entries(probs).sort((a, b) => b[1] - a[1])[0][0];
+
+            const explain = {
+                Visual: "Siswa visual belajar efektif dengan gambar, warna, dan catatan terstruktur. Mereka cenderung memahami informasi yang disajikan secara visual.",
+                Auditori: "Siswa auditori menyerap informasi lewat suara, diskusi, dan penjelasan lisan. Mereka belajar dengan baik melalui mendengarkan.",
+                Kinestetik: "Siswa kinestetik optimal dengan praktik langsung, eksperimen, dan aktivitas bergerak. Mereka belajar paling efektif dengan 'melakukan'.",
+            }[best];
+
+            const tips = {
+                Visual: [
+                    "Gunakan mind map dan highlight warna untuk membuat catatan.",
+                    "Tampilkan materi pembelajaran dalam bentuk diagram, peta konsep, atau infografis.",
+                    "Rangkum poin penting menggunakan simbol, gambar, atau diagram.",
+                    "Manfaatkan video edukatif dan presentasi visual."
+                ],
+                Auditori: [
+                    "Dengarkan penjelasan guru dengan seksama atau gunakan rekaman suara pelajaran.",
+                    "Gunakan lagu, ritme, atau cerita untuk mengingat konsep.",
+                    "Diskusikan materi pelajaran dengan teman atau kelompok belajar.",
+                    "Ulangi informasi secara lisan untuk memperkuat ingatan."
+                ],
+                Kinestetik: [
+                    "Lakukan eksperimen atau praktik langsung untuk memahami konsep.",
+                    "Gunakan alat peraga, model, atau permainan edukatif yang melibatkan gerakan.",
+                    "Selingi sesi belajar dengan aktivitas fisik ringan atau simulasi.",
+                    "Buat proyek yang melibatkan pembangunan atau manipulasi objek."
+                ],
+            }[best];
+
+            return { label: best, probabilities: probs, explanation: explain, tips };
+        }
+
+        // ===== AMBIL ELEMEN DOM =====
+        const form = document.getElementById("analyzer-form");
+        const analyzeBtn = document.getElementById("analyzeBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        const resultEl = document.getElementById("result");
+        const resultLabel = document.getElementById("result-label");
+        const resultExplanation = document.getElementById("result-explanation");
+        const resultTips = document.getElementById("result-tips");
+        const resultProbs = document.getElementById("result-probs");
+
+        analyzeBtn.addEventListener("click", async () => {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                alert("Token tidak ditemukan. Silakan login kembali.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const payload = getPayload();
+
+            // Basic validation for required fields (though HTML5 validation should handle it)
+            if (!payload.nama_siswa || !payload.kelas) {
+                alert("Nama Siswa dan Kelas wajib diisi.");
+                return;
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE}/predict`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}` // Use Bearer token
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (resp.status === 401 || resp.status === 403) { // Handle both unauthorized and forbidden
+                    alert("Token sudah tidak valid atau kedaluwarsa. Silakan login kembali.");
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("user_name");
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                if (!resp.ok) {
+                    const errorData = await resp.json().catch(() => ({})); // Safely parse error response
+                    throw new Error(`Backend error: ${errorData.detail || errorData.message || resp.statusText}`);
+                }
+                
+                const data = await resp.json();
+                renderResult(data);
+            } catch (e) {
+                console.warn("Backend error, falling back to local computation.", e);
+                const data = localCompute(payload);
+                renderResult(data);
+            }
+        });
+
+        // ===== RESET =====
+        resetBtn.addEventListener("click", () => {
+            form.reset();
+            resultEl.hidden = true;
+            updateCalculatedFields(); // Reset calculated fields too
+            // Clear any potential error messages from previous attempt
+            document.querySelectorAll('.error-message').forEach(el => el.remove());
+        });
+
+        // ===== DOWNLOAD RESULT CSV =====
+        document.getElementById("downloadResult").addEventListener("click", () => {
+            const nama = document.getElementById("nama_siswa").value || "siswa_tanpa_nama";
+            const tipeLabelEl = document.getElementById("result-label");
+            const tipe = tipeLabelEl.textContent.trim() || "-";
+            const penjelasan = document.getElementById("result-explanation").textContent.replace(/\n/g, " ") || "-";
+            const tips = Array.from(document.querySelectorAll("#result-tips li")).map((li) => li.textContent.trim()).join("; ") || "-";
+
+            if (tipe === '-' || tipe === 'Hasil Analisis') { // Check if any analysis was done
+                alert("Tidak ada hasil analisis yang tersedia untuk diunduh.");
+                return;
+            }
+
+            const kelas = document.getElementById("kelas").value || "-";
+            
+            // Prepare CSV content
+            const csvRows = [
+                ["Nama Siswa", "Kelas", "Tipe Belajar", "Penjelasan", "Saran Belajar"],
+                [nama, kelas, tipe, `"${penjelasan.replace(/"/g, '""')}"`, `"${tips.replace(/"/g, '""')}"`] // Handle quotes in data
+            ];
+
+            const csvContent = csvRows.map(row => row.join(",")).join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `hasil_klasifikasi_${nama.replace(/\s+/g, "_").toLowerCase()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+
+        // ===== DOWNLOAD ALL RESULTS =====
+        document.getElementById("downloadAllResultsCSV").addEventListener("click", async () => {
+            await downloadFiltered('csv');
+        });
+
+        document.getElementById("downloadAllResultsExcel").addEventListener("click", async () => {
+            await downloadFiltered('excel');
+        });
+
+        async function downloadFiltered(format) {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                alert("Token tidak ditemukan. Silakan login kembali.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const filterData = {
+                format: format,
+                kelas: document.getElementById("filterClass").value || null,
+                date: document.getElementById("filterDate").value || null, // For single date filter
+                date_from: document.getElementById("filterDateFrom").value || null, // For date range start
+                date_to: document.getElementById("filterDateTo").value || null,   // For date range end
+            };
+
+            // Remove null/empty values to avoid sending unnecessary filters to backend
+            Object.keys(filterData).forEach(key => {
+                if (filterData[key] === null || filterData[key] === '') {
+                    delete filterData[key];
+                }
+            });
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/download-all`, {
+                    method: "POST", // Changed to POST to send filter data in the body
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}` // Use Bearer token
+                    },
+                    body: JSON.stringify(filterData)
+                });
+
+                if (resp.status === 401 || resp.status === 403) {
+                    alert("Token sudah tidak valid atau kedaluwarsa. Silakan login kembali.");
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("user_name");
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                if (resp.status === 404) {
+                    alert("Tidak ada data yang sesuai dengan filter yang dipilih.");
+                    return;
+                }
+
+                if (!resp.ok) {
+                    const errData = await resp.json().catch(() => ({})); // Safely parse JSON error
+                    throw new Error(`Backend error: ${errData.detail || errData.message || resp.statusText}`);
+                }
+
+                const blob = await resp.blob();
+                if (blob.size === 0) {
+                    alert("File kosong. Tidak ada data yang dapat diunduh.");
+                    return;
+                }
+
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = format === 'excel' ? 'hasil_klasifikasi_semua.xlsx' : 'hasil_klasifikasi_semua.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+
+                console.log(`[v0] File ${format.toUpperCase()} downloaded successfully`);
+            } catch (e) {
+                console.error("[v0] Download error:", e);
+                alert(`Gagal mengunduh file: ${e.message}`);
+            }
+        }
+
+
+        // ===== CSV/Excel Import functionality =====
+        const tabManual = document.getElementById('tab-manual');
+        const tabCsv = document.getElementById('tab-csv');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const csvFileInput = document.getElementById('csv-file');
+        const csvDropZone = document.getElementById('csv-drop-zone');
+        const csvPreview = document.getElementById('csv-preview');
+        const csvUploadBtn = document.getElementById('csv-upload-btn');
+        const csvResetBtn = document.getElementById('csv-reset-btn');
+        const csvProgress = document.getElementById('csv-progress');
+        const csvProgressText = document.getElementById('csv-progress-text');
+        const csvProgressBar = document.getElementById('csv-progress-bar');
+        const csvResultMessage = document.getElementById('csv-result-message');
+        let parsedCsvData = []; // Stores data from the uploaded file
+
+        // Tab switching logic
+        tabManual.addEventListener('click', () => switchTab('manual'));
+        tabCsv.addEventListener('click', () => switchTab('csv'));
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'bg-primary-blue', 'text-white'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.add('bg-gray-200', 'text-gray-700'));
+            
+            if (tab === 'manual') {
+                tabManual.classList.add('active', 'bg-primary-blue', 'text-white');
+                tabManual.classList.remove('bg-gray-200', 'text-gray-700');
+            } else {
+                tabCsv.classList.add('active', 'bg-primary-blue', 'text-white');
+                tabCsv.classList.remove('bg-gray-200', 'text-gray-700');
+            }
+
+            tabContents.forEach(content => {
+                if ((tab === 'manual' && content.id === 'analyzer-form') || 
+                    (tab === 'csv' && content.id === 'csv-import-section')) {
+                    content.classList.remove('hidden');
+                    content.classList.add('active');
+                } else {
+                    content.classList.add('hidden');
+                    content.classList.remove('active');
+                }
+            });
+        }
+
+        // CSV/Excel file handling
+        csvDropZone.addEventListener('click', () => csvFileInput.click());
+        csvDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            csvDropZone.classList.add('bg-blue-100');
+        });
+        csvDropZone.addEventListener('dragleave', () => csvDropZone.classList.remove('bg-blue-100'));
+        csvDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            csvDropZone.classList.remove('bg-blue-100');
+            const files = e.dataTransfer.files;
+            if (files.length) handleFile(files[0]);
+        });
+
+        csvFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            const fileName = file.name.toLowerCase();
+            const validExtensions = ['.csv', '.xlsx', '.xls'];
+            const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+            
+            if (!validExtensions.includes(fileExtension)) {
+                alert('Format file tidak didukung. Gunakan file .csv, .xlsx, atau .xls');
+                csvFileInput.value = ''; // Clear the input
+                return;
+            }
+
+            // Display selected file name
+            document.getElementById('selected-file-info').classList.remove('hidden');
+            document.getElementById('selected-file-name').textContent = file.name;
+
+            if (fileExtension === '.csv') {
+                handleCsvFile(file);
+            } else { // .xlsx or .xls
+                handleExcelFile(file);
+            }
+            
+            csvFileInput.value = '';
+        }
+
+        function handleCsvFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const csv = e.target.result;
+                    parsedCsvData = parseCsv(csv);
+                    
+                    if (parsedCsvData.length === 0) {
+                        alert('File CSV kosong atau formatnya salah.');
+                        csvFileInput.value = ''; // Clear the input
+                        return;
+                    }
+
+                    previewCsvData(parsedCsvData);
+                    csvUploadBtn.disabled = false;
+                } catch (error) {
+                    console.error("CSV parsing error:", error);
+                    alert('Error saat membaca file CSV: ' + error.message);
+                    csvFileInput.value = ''; // Clear the input
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function handleExcelFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '', header: 1 }); // Use header: 1 to get raw headers
+                    
+                    if (jsonData.length === 0) {
+                        alert('File Excel kosong atau tidak memiliki data.');
+                        csvFileInput.value = ''; // Clear the input
+                        return;
+                    }
+
+                    // Extract headers from the first row
+                    const headers = jsonData[0].map(h => String(h).trim().toLowerCase().replace(/\s+/g, '_'));
+                    const rows = jsonData.slice(1); // Data rows
+
+                    // Map data to objects using normalized headers
+                    parsedCsvData = rows.map(row => {
+                        const objRow = {};
+                        headers.forEach((header, idx) => {
+                            objRow[header] = row[idx] !== undefined ? row[idx] : '';
+                        });
+                        return objRow;
+                    });
+
+                    previewCsvData(parsedCsvData);
+                    csvUploadBtn.disabled = false;
+                    
+                    console.log('[v0] Excel file parsed successfully:', parsedCsvData.length, 'rows');
+                } catch (error) {
+                    console.error('[v0] Error parsing Excel:', error);
+                    alert('Error saat membaca file Excel: ' + error.message);
+                    csvFileInput.value = ''; // Clear the input
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Parses CSV string into an array of objects
+        function parseCsv(csv) {
+            const lines = csv.trim().split('\n');
+            if (lines.length === 0) return [];
+
+            // Extract headers from the first line, normalize them
+            const headers = lines[0].split(',').map(h => String(h).trim().toLowerCase().replace(/\s+/g, '_'));
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values.length !== headers.length) {
+                    console.warn(`Skipping row ${i + 1} due to incorrect number of columns.`);
+                    continue; // Skip row if column count mismatch
+                }
+                const row = {};
+                headers.forEach((header, idx) => {
+                    row[header] = values[idx] || ''; // Use empty string if value is missing
+                });
+                data.push(row);
+            }
+            return data;
+        }
+
+        // Displays a preview of the first few rows of the parsed data
+        function previewCsvData(data) {
+            csvPreview.classList.remove('hidden');
+            document.getElementById('preview-count').textContent = data.length;
+
+            const headerRow = document.getElementById('preview-header');
+            const bodyRows = document.getElementById('preview-body');
+            headerRow.innerHTML = '';
+            bodyRows.innerHTML = '';
+
+            if (data.length === 0) return;
+
+            const headers = Object.keys(data[0]);
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.className = 'border border-gray-300 px-4 py-2 text-left font-medium bg-gray-100';
+                th.textContent = header.replace(/_/g, ' ').toUpperCase(); // Make headers more readable
+                headerRow.appendChild(th);
+            });
+
+            // Show only the first 5 rows for preview
+            data.slice(0, 5).forEach(row => {
+                const tr = document.createElement('tr');
+                headers.forEach(header => {
+                    const td = document.createElement('td');
+                    td.className = 'border border-gray-300 px-4 py-2';
+                    td.textContent = row[header] !== '' ? row[header] : '-'; // Display '-' for empty cells
+                    tr.appendChild(td);
+                });
+                bodyRows.appendChild(tr);
+            });
+            if (data.length > 5) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.className = 'border border-gray-300 px-4 py-2 text-center italic text-gray-500';
+                td.colSpan = headers.length;
+                td.textContent = `... dan ${data.length - 5} baris lainnya`;
+                tr.appendChild(td);
+                bodyRows.appendChild(tr);
+            }
+        }
+
+        // Handles the upload and analysis of data from the CSV/Excel file
+        csvUploadBtn.addEventListener('click', async () => {
+            if (parsedCsvData.length === 0) {
+                alert('Tidak ada data yang siap untuk diunggah.');
+                return;
+            }
+
+            const token = localStorage.getItem('access_token'); // Corrected from 'token' to 'access_token'
+            if (!token) {
+                alert('Sesi Anda telah berakhir. Silakan login kembali.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            csvProgress.classList.remove('hidden');
+            csvUploadBtn.disabled = true;
+            csvResetBtn.disabled = true; // Disable reset while uploading
+            let successCount = 0;
+            let errorCount = 0;
+            const csvResults = []; // Store individual results for potential display
+
+            // Helper function to calculate derived fields
+            const calculateDerivedFields = (row) => {
+                const nilai_bahasa = parseFloat(row.nilai_bahasa) || 0;
+                const nilai_mtk = parseFloat(row.nilai_mtk) || 0;
+                const nilai_ipa = parseFloat(row.nilai_ipa) || 0;
+                const nilai_ips = parseFloat(row.nilai_ips) || 0;
+
+                const payload = {
+                    nama_siswa: row.nama_siswa || '',
+                    kelas: row.kelas || '',
+                    nilai_bahasa: nilai_bahasa,
+                    nilai_mtk: nilai_mtk,
+                    nilai_ipa: nilai_ipa,
+                    nilai_ips: nilai_ips,
+                    rata_rata_umum: parseFloat(((nilai_bahasa + nilai_mtk + nilai_ipa + nilai_ips) / 4).toFixed(2)),
+                    indeks_eksakta: parseFloat(((nilai_mtk + nilai_ipa) / 2).toFixed(2)),
+                    indeks_non_eksakta: parseFloat(((nilai_bahasa + nilai_ips) / 2).toFixed(2)),
+                    daya_visual_gambar: parseInt(row.daya_visual_gambar) || 3,
+                    mengingat_suara: parseInt(row.mengingat_suara) || 3,
+                    suka_praktik: parseInt(row.suka_praktik) || 3,
+                    suka_membaca_mencatat: parseInt(row.suka_membaca_mencatat) || 3,
+                    ekskul_motorik: parseInt(row.ekskul_motorik) || 3,
+                    ekskul_musik: parseInt(row.ekskul_musik) || 3,
+                };
+                return payload;
+            };
+
+            // Process each row
+            for (let i = 0; i < parsedCsvData.length; i++) {
+                const row = parsedCsvData[i];
+                const payload = calculateDerivedFields(row);
+                
+                try {
+                    const resp = await fetch(`${API_BASE}/predict`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        csvResults.push({ // Store response data along with student info
+                            nama_siswa: payload.nama_siswa,
+                            kelas: payload.kelas,
+                            ...data
+                        });
+                        successCount++;
+                    } else {
+                        const errorDetail = await resp.json().catch(() => ({}));
+                        console.error(`Row ${i + 1} (${payload.nama_siswa}) failed:`, errorDetail);
+                        errorCount++;
+                        // Optionally store error details for specific row
+                    }
+                } catch (e) {
+                    console.error(`Network or unexpected error for row ${i + 1} (${payload.nama_siswa}):`, e);
+                    errorCount++;
+                }
+
+                // Update progress bar
+                const progress = ((i + 1) / parsedCsvData.length) * 100;
+                csvProgressText.textContent = `${Math.round(progress)}%`;
+                csvProgressBar.style.width = `${progress}%`;
+            }
+
+            // Finalize upload process
+            csvUploadBtn.disabled = false;
+            csvResetBtn.disabled = false; // Re-enable reset
+            
+            const messageText = `Selesai! ${successCount} data berhasil dianalisis, ${errorCount} data gagal.`;
+            let messageClass = '';
+            if (errorCount === 0) {
+                messageClass = 'bg-green-100 text-green-800';
+            } else if (successCount === 0) {
+                messageClass = 'bg-red-100 text-red-800';
+            } else {
+                messageClass = 'bg-yellow-100 text-yellow-800';
+            }
+
+            csvResultMessage.innerHTML = `<p class="${messageClass} p-3 rounded-lg">${messageText}</p>`;
+            csvResultMessage.classList.remove('hidden');
+
+            alert(`Upload data selesai!\nBerhasil: ${successCount}\nGagal: ${errorCount}`);
+
+            // If there are successful results, update the main result section
+            if (csvResults.length > 0) {
+                displayCsvResults(csvResults); // Function to display aggregated results
+            }
+        });
+
+        // Displays aggregated results from the CSV upload in the main result section
+        function displayCsvResults(results) {
+            const resultEl = document.getElementById("result");
+            const resultLabel = document.getElementById("result-label");
+            const resultExplanation = document.getElementById("result-explanation");
+            const resultTips = document.getElementById("result-tips");
+            const resultProbs = document.getElementById("result-probs");
+
+            // Update the main result display with a summary
+            resultLabel.textContent = `${results.length} Siswa Teranalisis`;
+            resultExplanation.innerHTML = `
+                <div class="text-sm text-gray-600">
+                    Ringkasan hasil analisis dari data yang diimpor. Anda dapat menggulir ke bawah untuk melihat detail per siswa jika ingin mengunduh ringkasan.
+                </div>
+            `;
+            resultTips.innerHTML = '<li class="text-sm text-gray-600">Untuk melihat detail lengkap dan saran per siswa, silahkan gunakan tombol "Unduh Semua Hasil (CSV/Excel)".</li>';
+            resultProbs.innerHTML = ''; // Clear probabilities for aggregated view
+            
+            resultEl.hidden = false;
+            
+            // Optionally scroll to the results section
+            resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Resets the CSV import section
+        csvResetBtn.addEventListener('click', () => {
+            csvFileInput.value = ''; // Clear file input
+            parsedCsvData = []; // Clear parsed data
+            csvPreview.classList.add('hidden'); // Hide preview
+            csvProgress.classList.add('hidden'); // Hide progress
+            csvResultMessage.innerHTML = ''; // Clear message
+            csvResultMessage.classList.add('hidden');
+            csvUploadBtn.disabled = true; // Disable upload button
+            csvResetBtn.disabled = false; // Re-enable reset button
+            document.getElementById('selected-file-info').classList.add('hidden'); // Hide file info
+            document.getElementById('selected-file-name').textContent = '';
+        });
+
+        // Download CSV template
+        document.getElementById('download-template').addEventListener('click', (e) => {
+            e.preventDefault();
+            const template = 'nama_siswa,kelas,nilai_bahasa,nilai_mtk,nilai_ipa,nilai_ips,daya_visual_gambar,mengingat_suara,suka_praktik,suka_membaca_mencatat,ekskul_motorik,ekskul_musik\nContoh Siswa,4A,85,75,80,78,4,3,4,4,3,3\nSiswa Lain,4B,78,82,85,75,3,4,5,3,4,2';
+            const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'template_siswa.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Download Excel template
+        document.getElementById('download-template-excel').addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Data for the Excel template
+            const templateData = [
+                {
+                    nama_siswa: 'Contoh Siswa 1',
+                    kelas: '4A',
+                    nilai_bahasa: 85,
+                    nilai_mtk: 75,
+                    nilai_ipa: 80,
+                    nilai_ips: 78,
+                    daya_visual_gambar: 4,
+                    mengingat_suara: 3,
+                    suka_praktik: 4,
+                    suka_membaca_mencatat: 4,
+                    ekskul_motorik: 3,
+                    ekskul_musik: 3
+                },
+                {
+                    nama_siswa: 'Contoh Siswa 2',
+                    kelas: '4B',
+                    nilai_bahasa: 78,
+                    nilai_mtk: 82,
+                    nilai_ipa: 85,
+                    nilai_ips: 75,
+                    daya_visual_gambar: 3,
+                    mengingat_suara: 4,
+                    suka_praktik: 5,
+                    suka_membaca_mencatat: 3,
+                    ekskul_motorik: 4,
+                    ekskul_musik: 2
+                }
+            ];
+
+            // Create workbook and worksheet
+            const ws = XLSX.utils.json_to_sheet(templateData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
+
+            // Set column widths for better readability
+            ws['!cols'] = [
+                { wch: 20 }, // nama_siswa
+                { wch: 8 },  // kelas
+                { wch: 12 }, // nilai_bahasa
+                { wch: 10 }, // nilai_mtk
+                { wch: 10 }, // nilai_ipa
+                { wch: 10 }, // nilai_ips
+                { wch: 18 }, // daya_visual_gambar
+                { wch: 15 }, // mengingat_suara
+                { wch: 12 }, // suka_praktik
+                { wch: 20 }, // suka_membaca_mencatat
+                { wch: 14 }, // ekskul_motorik
+                { wch: 12 }, // ekskul_musik
+            ];
+
+            // Trigger download
+            XLSX.writeFile(wb, 'template_siswa.xlsx');
+        });
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
