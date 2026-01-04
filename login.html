@@ -479,7 +479,6 @@
                         showMessage(data.message || "Login Google gagal!", "error");
                     }
                     submitBtn.disabled = false;
-                    setLoading(false);
                 }
             } catch (error) {
                 showMessage("Koneksi ke server gagal! Pastikan backend running di " + BACKEND_URL, "error");
@@ -552,8 +551,8 @@
             try {
                 if (isVerifying) {
                     const otp = document.getElementById("otp").value.trim();
-                    if (!otp) {
-                        showMessage("Masukkan kode OTP!", "error");
+                    if (!otp || otp.length !== 6) {
+                        showMessage("Masukkan 6 digit kode OTP yang valid!", "error");
                         setLoading(false);
                         return;
                     }
@@ -571,8 +570,7 @@
                             isVerifying = false;
                             isLogin = true;
                             formTitle.textContent = "Login";
-                            submitBtn.textContent = "Masuk";
-                            submitBtn.disabled = false;
+                            setLoading(false);
                             otpField.style.display = "none";
                             emailSection.style.display = "block";
                             passwordSection.style.display = "block";
@@ -661,11 +659,13 @@
                         showMessage("Registrasi berhasil! Cek email untuk verifikasi.", "success");
                         verifyingEmail = email;
                         isVerifying = true;
+                        document.getElementById("email").required = false;
+                        document.getElementById("password").required = false;
+                        setLoading(false);
                         nameField.style.display = "none";
                         emailSection.style.display = "none";
                         passwordSection.style.display = "none";
                         otpField.style.display = "block";
-                        submitBtn.textContent = "Verifikasi OTP";
                     } else {
                         showMessage(data.message || "Registrasi gagal!", "error");
                         setLoading(false);
@@ -673,6 +673,7 @@
                 }
             } catch (error) {
                 showMessage("Koneksi gagal! Pastikan backend running di " + BACKEND_URL, "error");
+                submitBtn.disabled = false;
                 setLoading(false);
             }
         });
