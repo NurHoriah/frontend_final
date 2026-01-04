@@ -401,8 +401,9 @@
         let isVerifying = false;
         let verifyingEmail = "";
 
-        const BACKEND_URL = "https://api.xyz.biz.id";
-
+        const BACKEND_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:5004'
+            : 'https://api.xyz.biz.id'; // Ganti dengan domain Cloudflare kamu
 
         const GOOGLE_CLIENT_ID = "842122693668-ct0che0nuegv2lk6a5tetv765ib3969o.apps.googleusercontent.com";
 
@@ -418,6 +419,13 @@
                 return false;
             }
             
+            return true;
+        }
+
+        function isValidPassword(password) {
+            if (password.length < 8) {
+                return false;
+            }
             return true;
         }
 
@@ -464,7 +472,6 @@
                             confirmButtonColor: '#ff6b6b'
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                // Pindah ke tab register secara otomatis
                                 toggleLink.click();
                             }
                         });
@@ -594,6 +601,12 @@
                         return;
                     }
 
+                    if (!isValidPassword(password)) {
+                        showMessage("Password minimal 8 karakter!", "error");
+                        setLoading(false);
+                        return;
+                    }
+
                     const response = await fetch(`${BACKEND_URL}/api/login`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -631,8 +644,8 @@
                         return;
                     }
 
-                    if (password.length < 6) {
-                        showMessage("Password minimal 6 karakter!", "error");
+                    if (!isValidPassword(password)) {
+                        showMessage("Password minimal 8 karakter!", "error");
                         setLoading(false);
                         return;
                     }

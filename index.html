@@ -6,10 +6,9 @@
     <title>Sistem Klasifikasi Tipe Karakter Belajar - SD Insan Kamil</title>
     
     <script>
-      // Set API URL from environment or fallback to default
       window.API_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:5004'
-    : 'https://overview-affiliate-satisfactory-proportion.trycloudflare.com';
+        ? 'http://localhost:5004'
+        : 'https://api.xyz.biz.id'; // Ganti dengan domain Cloudflare kamu yang sebenarnya
 
     </script>
     
@@ -151,6 +150,43 @@
             .floating-icon:nth-child(13) { font-size: 0.8rem; }
             .floating-icon:nth-child(14) { font-size: 1.7rem; }
             .floating-icon:nth-child(15) { font-size: 1.45rem; }
+        }
+
+        /* Styles for the detailed results table */
+        #detailed-results-section {
+            margin-top: 2rem; /* Adjust as needed */
+        }
+        #detailed-results-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        #detailed-results-table th,
+        #detailed-results-table td {
+            border: 1px solid #d1d5db; /* gray-300 */
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            font-size: 0.875rem; /* text-sm */
+        }
+        #detailed-results-table th {
+            background-color: #f3f4f6; /* gray-100 */
+            font-weight: 600;
+            color: #1f2937; /* text-gray-900 */
+        }
+        #detailed-results-table td.highlight {
+            font-weight: 600;
+            color: #0288d1; /* primary-dark */
+        }
+        #detailed-results-table td.percentage {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Responsive adjustments for the table */
+        @media (max-width: 768px) {
+            #detailed-results-table th,
+            #detailed-results-table td {
+                padding: 0.4rem 0.5rem;
+                font-size: 0.75rem; /* text-xs */
+            }
         }
     </style>
 </head>
@@ -478,6 +514,38 @@
             <ul id="result-tips" class="tips-list space-y-1 sm:space-y-2 pl-4 sm:pl-5 text-sm sm:text-base text-gray-700"></ul>
 
             <div id="result-probs" class="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-100 rounded-lg text-sm font-mono"></div>
+
+            <!-- Detailed Results Table for CSV/Excel Upload -->
+            <div id="detailed-results-section" class="mt-6 sm:mt-8 hidden">
+                <h4 class="font-bold text-primary-dark mb-3 sm:mb-4 flex items-center gap-1">
+                    <i data-lucide="list" class="w-4 h-4"></i> Detail Hasil Analisis Siswa
+                </h4>
+                <div class="overflow-x-auto">
+                    <table id="detailed-results-table">
+                        <thead>
+                            <tr>
+                                <th class="px-2 sm:px-4 py-2">Nama Siswa</th>
+                                <th class="px-2 sm:px-4 py-2">Kelas</th>
+                                <th class="px-2 sm:px-4 py-2">Tipe Belajar</th>
+                                <th class="px-2 sm:px-4 py-2">Visual (%)</th>
+                                <th class="px-2 sm:px-4 py-2">Auditori (%)</th>
+                                <th class="px-2 sm:px-4 py-2">Kinestetik (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailed-results-body">
+                            <!-- Rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button id="download-results-csv" class="bg-primary-blue text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-primary-dark transition duration-300 flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
+                        <i data-lucide="download" class="w-4 sm:w-5 h-4 sm:h-5"></i> Unduh Detail (CSV)
+                    </button>
+                    <button id="download-results-excel" class="bg-green-600 text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-green-700 transition duration-300 flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
+                        <i data-lucide="file-spreadsheet" class="w-4 sm:w-5 h-4 sm:h-5"></i> Unduh Detail (Excel)
+                    </button>
+                </div>
+            </div>
 
             <!-- Filter section for download -->
             <div class="mt-6 sm:mt-8 p-4 sm:p-6 bg-blue-50 rounded-lg sm:rounded-xl border-l-4 border-primary-blue">
@@ -1235,17 +1303,18 @@
             const resultTips = document.getElementById("result-tips");
             const resultProbs = document.getElementById("result-probs");
 
-            // Update the main result display with a summary
             resultLabel.textContent = `${results.length} Siswa Teranalisis`;
             resultExplanation.innerHTML = `
                 <div class="text-sm text-gray-600">
-                    Ringkasan hasil analisis dari data yang diimpor. Anda dapat menggulir ke bawah untuk melihat detail per siswa jika ingin mengunduh ringkasan.
+                    Ringkasan hasil analisis dari data yang diimpor. Anda dapat mengunduh laporan lengkap dalam format CSV atau Excel.
                 </div>
             `;
-            resultTips.innerHTML = '<li class="text-sm text-gray-600">Untuk melihat detail lengkap dan saran per siswa, silahkan gunakan tombol "Unduh Semua Hasil (CSV/Excel)".</li>';
+            resultTips.innerHTML = '<li class="text-sm text-gray-600">Total: ' + results.length + ' siswa telah dianalisis dengan sukses.</li>';
             resultProbs.innerHTML = ''; // Clear probabilities for aggregated view
             
             resultEl.hidden = false;
+            
+            showDetailedResults(results);
             
             // Optionally scroll to the results section
             resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1263,6 +1332,7 @@
             csvResetBtn.disabled = false; // Re-enable reset button
             document.getElementById('selected-file-info').classList.add('hidden'); // Hide file info
             document.getElementById('selected-file-name').textContent = '';
+            document.getElementById('detailed-results-section').classList.add('hidden'); // Hide detailed results table
         });
 
         // Download CSV template
@@ -1343,6 +1413,102 @@
 
         // Initialize Lucide Icons
         lucide.createIcons();
+
+        // Store detailed results from CSV import for download
+        let detailedResults = [];
+
+        // Function to display detailed results in table
+        function showDetailedResults(results) {
+            const detailedSection = document.getElementById('detailed-results-section');
+            const resultsBody = document.getElementById('detailed-results-body');
+            
+            detailedResults = results; // Store for download later
+            resultsBody.innerHTML = '';
+
+            results.forEach(result => {
+                const tr = document.createElement('tr');
+                const visual = ((result.probabilities?.Visual ?? 0) * 100).toFixed(1);
+                const auditori = ((result.probabilities?.Auditori ?? 0) * 100).toFixed(1);
+                const kinestetik = ((result.probabilities?.Kinestetik ?? 0) * 100).toFixed(1);
+                
+                tr.innerHTML = `
+                    <td class="border border-gray-300 px-2 sm:px-4 py-2">${result.nama_siswa}</td>
+                    <td class="border border-gray-300 px-2 sm:px-4 py-2">${result.kelas}</td>
+                    <td class="border border-gray-300 px-2 sm:px-4 py-2 highlight">${result.label}</td>
+                    <td class="border border-gray-300 px-2 sm:px-4 py-2 percentage">${visual}%</td>
+                    <td class="border border-gray-300 px-2 sm:px-4 py-2 percentage">${auditori}%</td>
+                    <td class="border border-gray-300 px-2 sm:px-4 py-2 percentage">${kinestetik}%</td>
+                `;
+                resultsBody.appendChild(tr);
+            });
+
+            detailedSection.classList.remove('hidden');
+        }
+
+        // Download results as CSV
+        document.getElementById('download-results-csv').addEventListener('click', () => {
+            if (detailedResults.length === 0) {
+                alert('Tidak ada data untuk diunduh.');
+                return;
+            }
+
+            const headers = ['Nama Siswa', 'Kelas', 'Tipe Belajar', 'Visual (%)', 'Auditori (%)', 'Kinestetik (%)'];
+            const rows = detailedResults.map(result => [
+                result.nama_siswa,
+                result.kelas,
+                result.label,
+                ((result.probabilities?.Visual ?? 0) * 100).toFixed(1),
+                ((result.probabilities?.Auditori ?? 0) * 100).toFixed(1),
+                ((result.probabilities?.Kinestetik ?? 0) * 100).toFixed(1)
+            ]);
+
+            let csvContent = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `hasil_analisis_${new Date().getTime()}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Download results as Excel
+        document.getElementById('download-results-excel').addEventListener('click', () => {
+            if (detailedResults.length === 0) {
+                alert('Tidak ada data untuk diunduh.');
+                return;
+            }
+
+            const excelData = detailedResults.map(result => ({
+                'Nama Siswa': result.nama_siswa,
+                'Kelas': result.kelas,
+                'Tipe Belajar': result.label,
+                'Visual (%)': ((result.probabilities?.Visual ?? 0) * 100).toFixed(1),
+                'Auditori (%)': ((result.probabilities?.Auditori ?? 0) * 100).toFixed(1),
+                'Kinestetik (%)': ((result.probabilities?.Kinestetik ?? 0) * 100).toFixed(1)
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(excelData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Hasil Analisis');
+
+            ws['!cols'] = [
+                { wch: 20 },
+                { wch: 8 },
+                { wch: 15 },
+                { wch: 12 },
+                { wch: 12 },
+                { wch: 12 }
+            ];
+
+            XLSX.writeFile(wb, `hasil_analisis_${new Date().getTime()}.xlsx`);
+        });
     </script>
 </body>
 </html>
