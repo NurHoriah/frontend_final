@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // URL Backend Setup
+  // URL Backend Setup (Otomatis deteksi mode)
   window.API_URL = window.location.hostname === "localhost" ? "http://localhost:5004" : "https://api.xyz.biz.id";
   const BACKEND_URL = window.API_URL;
 
@@ -36,23 +36,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const teacherName = document.getElementById("teacherName");
   if (teacherName) teacherName.textContent = localStorage.getItem("user_name") || "Guru";
 
-  // LOGIKA 1: Perhitungan Otomatis Rata-rata & Indeks (Manual Form)
+  // --- LOGIKA 1: Perhitungan Otomatis Rata-rata & Indeks ---
   const scoreFields = ["nilai_bahasa", "nilai_mtk", "nilai_ipa", "nilai_ips"];
   scoreFields.forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.addEventListener("input", () => {
-      const b = +document.getElementById("nilai_bahasa").value || 0;
-      const m = +document.getElementById("nilai_mtk").value || 0;
-      const i = +document.getElementById("nilai_ipa").value || 0;
-      const s = +document.getElementById("nilai_ips").value || 0;
+      const b = parseFloat(document.getElementById("nilai_bahasa").value) || 0;
+      const m = parseFloat(document.getElementById("nilai_mtk").value) || 0;
+      const i = parseFloat(document.getElementById("nilai_ipa").value) || 0;
+      const s = parseFloat(document.getElementById("nilai_ips").value) || 0;
 
-      document.getElementById("rata_rata_umum").value = ((b + m + i + s) / 4).toFixed(2);
-      document.getElementById("indeks_eksakta").value = ((m + i) / 2).toFixed(2);
-      document.getElementById("indeks_non_eksakta").value = ((b + s) / 2).toFixed(2);
+      // Update field hasil (pembulatan bulat sesuai logika sidang Anda)
+      if(document.getElementById("rata_rata_umum")) document.getElementById("rata_rata_umum").value = Math.round((b + m + i + s) / 4);
+      if(document.getElementById("indeks_eksakta")) document.getElementById("indeks_eksakta").value = Math.round((m + i) / 2);
+      if(document.getElementById("indeks_non_eksakta")) document.getElementById("indeks_non_eksakta").value = Math.round((b + s) / 2);
     });
   });
 
-  // LOGIKA 2: Analisis Input Manual
+  // --- LOGIKA 2: Analisis Input Manual (FIX ERROR 422) ---
   if (analyzeBtn) {
     analyzeBtn.onclick = async (e) => {
       e.preventDefault();
@@ -65,9 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
         nama_siswa: document.getElementById("nama_siswa").value || "Siswa",
         kelas: document.getElementById("kelas").value || "-",
         nilai_bahasa: b, nilai_mtk: m, nilai_ipa: i, nilai_ips: s,
-        rata_rata_umum: (b + m + i + s) / 4,
-        indeks_eksakta: (m + i) / 2,
-        indeks_non_eksakta: (b + s) / 2,
+        rata_rata_umum: parseFloat(document.getElementById("rata_rata_umum").value) || (b + m + i + s) / 4,
+        indeks_eksakta: parseFloat(document.getElementById("indeks_eksakta").value) || (m + i) / 2,
+        indeks_non_eksakta: parseFloat(document.getElementById("indeks_non_eksakta").value) || (b + s) / 2,
         daya_visual_gambar: Number(document.getElementById("daya_visual_gambar").value) || 3,
         mengingat_suara: Number(document.getElementById("mengingat_suara").value) || 3,
         suka_praktik: Number(document.getElementById("suka_praktik").value) || 3,
@@ -84,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         const data = await res.json();
         if (res.ok) renderSingleResult(data, payload.nama_siswa);
-        else alert("Gagal melakukan analisis: Cek inputan Anda (422)");
+        else alert("Gagal melakukan analisis: " + (data.error || "Cek input (422)"));
       } catch (err) { alert("Terjadi kesalahan koneksi ke server."); }
     };
   }
@@ -106,10 +107,9 @@ document.addEventListener("DOMContentLoaded", () => {
     resultEl.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // LOGIKA 3: Tab Switching (Manual vs CSV)
+  // --- LOGIKA 3: Tab Switching (Manual vs CSV) ---
   const tabManual = document.getElementById("tab-manual");
   const tabCsv = document.getElementById("tab-csv");
-
   if (tabManual && tabCsv) {
     tabManual.onclick = () => {
       form.classList.remove("hidden"); csvSection.classList.add("hidden");
@@ -123,29 +123,22 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // LOGIKA 4: Handle Upload File & Preview
-  const csvDropZone = document.getElementById("csv-drop-zone");
+  // --- LOGIKA 4: Handle Upload File & Preview ---
   if (csvDropZone) {
     csvDropZone.onclick = () => csvFileInput.click();
     csvFileInput.onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      
       document.getElementById("selected-file-info").classList.remove("hidden");
       document.getElementById("selected-file-name").textContent = file.name;
-
       const reader = new FileReader();
       reader.onload = (event) => {
         const data = new Uint8Array(event.target.result);
         const workbook = XLSX.read(data, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(sheet);
-        
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
         parsedCsvData = json;
         csvUploadBtn.disabled = false;
-        
-        const previewBody = document.getElementById("preview-body");
-        previewBody.innerHTML = json.slice(0, 5).map(row => `
+        document.getElementById("preview-body").innerHTML = json.slice(0, 5).map(row => `
           <tr>
             <td class="border px-2 py-1 text-sm">${row.nama_siswa || row.nama || "-"}</td>
             <td class="border px-2 py-1 text-sm text-center">${row.kelas || "-"}</td>
@@ -159,18 +152,16 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // LOGIKA 5: Proses Batch Upload (Kolektif)
+  // --- LOGIKA 5: Proses Batch Upload (Kolektif) ---
   if (csvUploadBtn) {
     csvUploadBtn.onclick = async () => {
       csvUploadBtn.disabled = true;
       csvProgress.classList.remove("hidden");
       detailedResults = [];
-
       for (let i = 0; i < parsedCsvData.length; i++) {
         const row = parsedCsvData[i];
         const nb = Number(row.nilai_bahasa || 0), nm = Number(row.nilai_mtk || 0);
         const ni = Number(row.nilai_ipa || 0), ns = Number(row.nilai_ips || 0);
-
         const payload = {
           nama_siswa: row.nama_siswa || "Siswa", kelas: row.kelas || "-",
           nilai_bahasa: nb, nilai_mtk: nm, nilai_ipa: ni, nilai_ips: ns,
@@ -183,7 +174,6 @@ document.addEventListener("DOMContentLoaded", () => {
           ekskul_motorik: Number(row.ekskul_motorik || 3),
           ekskul_musik: Number(row.ekskul_musik || 3)
         };
-
         try {
           const res = await fetch(`${BACKEND_URL}/predict`, {
             method: "POST",
@@ -195,12 +185,10 @@ document.addEventListener("DOMContentLoaded", () => {
             detailedResults.push({ ...payload, ...resData });
           }
         } catch (e) { console.error(e); }
-
         const pct = Math.round(((i + 1) / parsedCsvData.length) * 100);
         csvProgressBar.style.width = pct + "%";
         csvProgressText.textContent = pct + "%";
       }
-
       renderBatchResults(detailedResults);
       alert("Analisis Kolektif Berhasil Selesai!");
     };
@@ -209,8 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderBatchResults(results) {
     resultEl.hidden = false;
     document.getElementById("detailed-results-section").classList.remove("hidden");
-    const body = document.getElementById("detailed-results-body");
-    body.innerHTML = results.map(r => `
+    document.getElementById("detailed-results-body").innerHTML = results.map(r => `
       <tr class="hover:bg-gray-50 text-sm">
         <td class="border px-4 py-2">${r.nama_siswa}</td>
         <td class="border px-4 py-2 text-center">${r.kelas}</td>
@@ -223,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resultEl.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // LOGIKA 6: Download Template (Excel/CSV)
+  // --- LOGIKA 6: Download Template ---
   const downloadTemplate = (isExcel) => {
     const headers = ["nama_siswa", "kelas", "nilai_bahasa", "nilai_mtk", "nilai_ipa", "nilai_ips", "daya_visual_gambar", "mengingat_suara", "suka_praktik", "suka_membaca_mencatat", "ekskul_motorik", "ekskul_musik"];
     const ws = XLSX.utils.aoa_to_sheet([headers, ["Ahmad", "4B", 85, 90, 80, 85, 5, 4, 3, 5, 4, 2]]);
@@ -231,11 +218,10 @@ document.addEventListener("DOMContentLoaded", () => {
     XLSX.utils.book_append_sheet(wb, ws, "Template");
     XLSX.writeFile(wb, `Template_Siswa.${isExcel ? 'xlsx' : 'csv'}`);
   };
-
   document.getElementById("download-template-csv")?.addEventListener("click", (e) => { e.preventDefault(); downloadTemplate(false); });
   document.getElementById("download-template-excel")?.addEventListener("click", (e) => { e.preventDefault(); downloadTemplate(true); });
 
-  // LOGIKA 7: Download Hasil Analisis
+  // --- LOGIKA 7: Download Hasil Analisis ---
   document.getElementById("download-results-excel")?.addEventListener("click", () => {
     if (detailedResults.length === 0) return alert("Belum ada data untuk diunduh.");
     const exportData = detailedResults.map(r => ({
@@ -248,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
     XLSX.writeFile(wb, "Hasil_Analisis_Kolektif.xlsx");
   });
 
-  // LOGIKA 8: Logout & Reset
+  // --- LOGIKA 8: Logout & Reset ---
   document.getElementById("logoutBtn")?.onclick = () => { localStorage.clear(); window.location.href = "login.html"; };
   document.getElementById("resetBtn")?.onclick = () => window.location.reload();
   if (csvResetBtn) csvResetBtn.onclick = () => window.location.reload();
