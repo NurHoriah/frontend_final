@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const csvDropZone = document.getElementById("csv-drop-zone");
 
   let parsedCsvData = [];
-  let detailedResults = []; 
+  let detailedResults = []; // PENTING: Variabel ini sekarang dijamin terisi untuk Unduh All
 
   // --- 3. AUTO HITUNG (RATA-RATA & INDEKS) ---
   const scoreFields = ["nilai_bahasa", "nilai_mtk", "nilai_ipa", "nilai_ips"];
@@ -97,7 +97,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleFile(file) {
     document.getElementById("selected-file-name").textContent = file.name;
     document.getElementById("selected-file-info").classList.remove("hidden");
+    
+    // Pastikan tombol analisis menyala
     csvUploadBtn.disabled = false;
+    csvUploadBtn.classList.remove("opacity-50", "cursor-not-allowed");
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -136,11 +139,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 6. PROSES ANALISIS KOLEKTIF (DB CONNECTED) ---
   csvUploadBtn?.addEventListener("click", async () => {
-    if (parsedCsvData.length === 0) return;
+    if (parsedCsvData.length === 0) return alert("Pilih file dulu!");
+    
     csvUploadBtn.disabled = true;
     csvUploadBtn.textContent = "Sedang Memproses...";
     csvProgress.classList.remove("hidden");
-    detailedResults = []; 
+    detailedResults = []; // Reset penampung agar data fresh
 
     for (let i = 0; i < parsedCsvData.length; i++) {
       const row = parsedCsvData[i];
@@ -156,7 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
         nilai_mtk: nm,
         nilai_ipa: ni,
         nilai_ips: ns,
-        // Tambahkan kalkulasi otomatis untuk Backend
         rata_rata_umum: (nb + nm + ni + ns) / 4,
         indeks_eksakta: (nm + ni) / 2,
         indeks_non_eksakta: (nb + ns) / 2,
@@ -177,6 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         if (res.ok) {
           const data = await res.json();
+          // Simpan hasil ke variabel global agar bisa didownload
           detailedResults.push({ ...payload, ...data });
         }
       } catch (err) { console.error("Error pada baris " + i, err); }
@@ -189,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderBatchResults(detailedResults);
     csvUploadBtn.disabled = false;
     csvUploadBtn.textContent = "Analisis Selesai";
+    alert("Analisis Kolektif Selesai!");
   });
 
   function renderBatchResults(results) {
@@ -262,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderSingleResult(data, name) {
     resultEl.hidden = false;
     resultLabel.textContent = data.label || data.prediction;
-    resultExplanation.textContent = data.explanation || `Berdasarkan data, ${name} memiliki kecenderungan tipe belajar ${data.label}.`;
+    resultExplanation.textContent = data.explanation || `Berdasarkan data, ${name} memiliki kecenderungan tipe belajar ${data.label || data.prediction}.`;
     resultTips.innerHTML = (data.tips || []).map(t => `<li>${t}</li>`).join("");
     
     resultProbs.innerHTML = "";
@@ -277,7 +282,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 8. UNDUH HASIL ANALISIS (EXCEL) ---
   document.getElementById("download-results-excel")?.addEventListener("click", () => {
-    if (detailedResults.length === 0) return alert("Tidak ada data untuk diunduh. Lakukan analisis kolektif terlebih dahulu.");
+    // Mengecek apakah detailedResults punya isi
+    if (!detailedResults || detailedResults.length === 0) {
+       alert("Tidak ada data untuk diunduh. Lakukan analisis kolektif sampai muncul tabel di bawah terlebih dahulu.");
+       return;
+    }
     
     const exportData = detailedResults.map(r => ({
       "Nama Siswa": r.nama_siswa,
@@ -290,27 +299,32 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Hasil Analisis INKA");
-    XLSX.writeFile(wb, "Hasil_Klasifikasi_Kolektif.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Hasil Analisis");
+    XLSX.writeFile(wb, "Hasil_Klasifikasi_Kolektif_INKA.xlsx");
   });
 
   // --- 9. TAB SWITCHING & LOGOUT ---
-  document.getElementById("tab-manual")?.addEventListener("click", () => {
-    document.getElementById("analyzer-form").classList.remove("hidden");
-    document.getElementById("csv-section").classList.add("hidden");
-    document.getElementById("tab-manual").className = "active bg-primary-blue text-white px-4 py-2 rounded shadow-md";
-    document.getElementById("tab-csv").className = "px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition";
+  const btnManual = document.getElementById("tab-manual");
+  const btnCsv = document.getElementById("tab-csv");
+  const sectionManual = document.getElementById("analyzer-form");
+  const sectionCsv = document.getElementById("csv-section");
+
+  btnManual?.addEventListener("click", () => {
+    sectionManual.classList.remove("hidden");
+    sectionCsv.classList.add("hidden");
+    btnManual.className = "active bg-primary-blue text-white px-4 py-2 rounded shadow-md";
+    btnCsv.className = "px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition";
   });
 
-  document.getElementById("tab-csv")?.addEventListener("click", () => {
-    document.getElementById("analyzer-form").classList.add("hidden");
-    document.getElementById("csv-section").classList.remove("hidden");
-    document.getElementById("tab-csv").className = "active bg-primary-blue text-white px-4 py-2 rounded shadow-md";
-    document.getElementById("tab-manual").className = "px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition";
+  btnCsv?.addEventListener("click", () => {
+    sectionManual.classList.add("hidden");
+    sectionCsv.classList.remove("hidden");
+    btnCsv.className = "active bg-primary-blue text-white px-4 py-2 rounded shadow-md";
+    btnManual.className = "px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition";
   });
 
   csvResetBtn?.addEventListener("click", () => {
-    location.reload(); // Cara paling bersih untuk reset semua state
+    location.reload(); 
   });
 
   document.getElementById("logoutBtn")?.addEventListener("click", () => {
