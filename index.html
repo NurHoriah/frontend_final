@@ -8,8 +8,8 @@
     <script>
       window.API_URL = window.location.hostname === 'localhost'
         ? 'http://localhost:5004'
-        : 'https://api.xyz.biz.id'; // Ganti dengan domain Cloudflare kamu yang sebenarnya
-
+        : 'https://api.xyz.biz.id';
+      window.API_BASE = window.API_URL;
     </script>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -413,177 +413,131 @@
         </form>
 
         <!-- CSV/Excel Import Section -->
-        <div id="csv-import-section" class="bg-white p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue tab-content hidden">
-            <!-- Ubah judul section -->
+        <!-- Renamed ID to match the tab button and improved structure -->
+        <div id="csv-section" class="bg-white p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue tab-content hidden">
             <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
-                <i data-lucide="upload-cloud" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Import Data Siswa dari CSV/Excel
+                <i data-lucide="file-up" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Import Data Kolektif
             </h3>
             
-            <!-- Update instruksi format file -->
-            <div class="bg-blue-50 border-l-4 border-primary-blue p-4 mb-4 sm:mb-6 rounded text-sm">
-                <p class="text-sm text-gray-700 mb-2 font-semibold">Format file yang didukung: <span class="text-primary-dark">.csv, .xlsx, .xls</span></p>
-                <div class="overflow-x-auto">
-                    <p class="text-xs text-gray-600 font-mono whitespace-nowrap">
-                        Kolom yang diperlukan: nama_siswa, kelas, nilai_bahasa, nilai_mtk, nilai_ipa, nilai_ips, 
-                        daya_visual_gambar, mengingat_suara, suka_praktik, 
-                        suka_membaca_mencatat, ekskul_motorik, ekskul_musik
-                    </p>
-                </div>
-                <p class="text-xs text-gray-500 mt-2 italic">
-                    💡 Kolom rata_rata_umum, indeks_eksakta, dan indeks_non_eksakta akan dihitung otomatis
-                </p>
-                <div class="flex gap-3 mt-3 flex-wrap">
-                    <a href="#" id="download-template" class="text-primary-blue underline hover:text-primary-dark font-medium text-xs">
-                        📥 Unduh template CSV
-                    </a>
-                    <!-- Tambahkan tombol download template Excel -->
-                    <a href="#" id="download-template-excel" class="text-green-600 underline hover:text-green-800 font-medium text-xs">
-                        📥 Unduh template Excel
-                    </a>
+            <div id="csv-drop-zone" class="border-2 border-dashed border-primary-blue/30 rounded-xl p-6 sm:p-10 text-center hover:border-primary-blue transition duration-300 bg-primary-light/30">
+                <i data-lucide="cloud-upload" class="w-10 sm:w-12 h-10 sm:h-12 mx-auto text-primary-blue mb-4"></i>
+                <p class="text-gray-700 font-medium mb-1">Klik atau seret file ke sini</p>
+                <p class="text-xs text-gray-500 mb-4">Mendukung format .csv, .xlsx, .xls</p>
+                <input type="file" id="csv-file-input" class="hidden" accept=".csv, .xlsx, .xls" />
+                
+                <div id="selected-file-info" class="hidden flex items-center justify-center gap-2 bg-white p-2 rounded-lg border border-primary-blue inline-flex mx-auto">
+                    <i data-lucide="file-text" class="w-4 h-4 text-primary-dark"></i>
+                    <span id="selected-file-name" class="text-sm font-semibold text-primary-dark"></span>
                 </div>
             </div>
 
-            <label class="block mb-4 sm:mb-6">
-                <!-- Update label dan accept attribute untuk mendukung Excel -->
-                <span class="text-gray-700 font-medium mb-2 sm:mb-3 block text-sm">Pilih File CSV atau Excel</span>
-                <div class="border-2 border-dashed border-primary-blue rounded-lg p-4 sm:p-8 text-center hover:bg-blue-50 transition" id="csv-drop-zone">
-                    <i data-lucide="file-up" class="w-8 sm:w-12 h-8 sm:h-12 mx-auto text-primary-blue mb-2 sm:mb-3"></i>
-                    <p class="text-gray-700 font-semibold text-sm sm:text-base">Drag & drop file di sini atau klik untuk memilih</p>
-                    <p class="text-xs text-gray-500 mt-1">Format: .csv, .xlsx, .xls</p>
-                    <!-- Update accept untuk menerima CSV dan Excel -->
-                    <input 
-                        type="file" 
-                        id="csv-file" 
-                        accept=".csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" 
-                        class="hidden"
-                    />
-                </div>
-            </label>
-            
-            <!-- Tampilkan nama file yang dipilih -->
-            <div id="selected-file-info" class="mb-3 sm:mb-4 hidden">
-                <p class="text-sm text-gray-600">File dipilih: <span id="selected-file-name" class="font-semibold text-primary-dark"></span></p>
+            <div id="csv-preview" class="hidden mt-6 overflow-x-auto">
+                <p class="text-sm font-bold text-gray-700 mb-2">Pratinjau Data (<span id="preview-count">0</span> Baris Pertama):</p>
+                <table class="min-w-full border-collapse border border-gray-300 text-xs sm:text-sm">
+                    <thead>
+                        <tr id="preview-header">
+                            <!-- Headers will be dynamically generated -->
+                        </tr>
+                    </thead>
+                    <tbody id="preview-body"></tbody>
+                </table>
             </div>
 
-            <div id="csv-preview" class="mb-4 sm:mb-6 hidden">
-                <h4 class="font-bold text-gray-700 mb-2 sm:mb-3 flex items-center gap-1">
-                    <i data-lucide="eye" class="w-4 h-4"></i> Preview Data (<span id="preview-count">0</span> baris)
-                </h4>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm border-collapse border border-gray-300">
-                        <thead class="bg-gray-100">
-                            <tr id="preview-header"></tr>
-                        </thead>
-                        <tbody id="preview-body"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="flex gap-2 sm:gap-3">
-                <button type="button" id="csv-upload-btn" class="bg-primary-dark text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-primary-blue transition flex items-center gap-1 sm:gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">
-                    <i data-lucide="send" class="w-4 sm:w-5 h-4 sm:h-5"></i> Upload & Analisis
+            <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                <button id="csv-upload-btn" disabled class="flex-1 bg-primary-blue text-white py-3 rounded-lg font-bold hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    Proses dan Analisis
                 </button>
-                <button type="button" id="csv-reset-btn" class="bg-gray-200 text-gray-700 font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl hover:bg-gray-300 transition text-sm sm:text-base">
+                <button id="csv-reset-btn" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
                     Reset
                 </button>
             </div>
 
-            <div id="csv-progress" class="mt-4 sm:mt-6 hidden">
-                <p class="text-sm text-gray-700 mb-1 sm:mb-2">Progress: <span id="csv-progress-text">0%</span></p>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div id="csv-progress-bar" class="bg-primary-blue h-2 rounded-full transition-all" style="width: 0%"></div>
+            <div id="csv-progress" class="hidden mt-6">
+                <div class="flex justify-between mb-1">
+                    <span class="text-sm font-medium text-primary-dark">Memproses Data...</span>
+                    <span id="csv-progress-text" class="text-sm font-medium text-primary-dark">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="csv-progress-bar" class="bg-primary-blue h-2.5 rounded-full" style="width: 0%"></div>
                 </div>
             </div>
 
-            <div id="csv-result-message" class="mt-4 sm:mt-6 hidden p-3 sm:p-4 rounded-lg text-sm"></div>
+            <div id="csv-result-message" class="hidden mt-4"></div>
+            
+            <!-- Download template buttons -->
+            <div class="mt-6 flex flex-col sm:flex-row gap-3 text-center">
+                <a href="#" id="download-template-csv" class="flex-1 bg-primary-blue text-white py-3 rounded-lg font-bold hover:bg-primary-dark transition flex items-center justify-center gap-2">
+                    <i data-lucide="download" class="w-4 h-4"></i> Unduh Template CSV
+                </a>
+                <a href="#" id="download-template-excel" class="flex-1 bg-primary-blue text-white py-3 rounded-lg font-bold hover:bg-primary-dark transition flex items-center justify-center gap-2">
+                    <i data-lucide="download" class="w-4 h-4"></i> Unduh Template Excel
+                </a>
+            </div>
         </div>
 
         <!-- Hasil Analisis -->
-        <section id="result" class="bg-white p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-dark mt-8" hidden>
-            <h3 class="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-primary-dark flex items-center">
-                <i data-lucide="bar-chart-3" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3"></i> Hasil Analisis
-            </h3>
-            <div class="mb-3 sm:mb-4">
-                <span id="result-label" class="inline-block px-3 sm:px-4 py-1 text-lg font-bold rounded-full bg-primary-light text-primary-dark shadow-inner"></span>
+        <!-- Updated structure for better consistency with new CSV section -->
+        <div id="result" class="mt-8 bg-white p-6 sm:p-10 rounded-xl sm:rounded-2xl shadow-2xl border-l-8 border-primary-blue" hidden>
+            <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+                <div>
+                    <h3 class="text-2xl font-extrabold text-primary-dark mb-1">Hasil Klasifikasi</h3>
+                    <p id="result-label" class="text-lg font-bold text-gray-800"></p>
+                </div>
+                <div class="flex gap-2">
+                    <!-- Simplified download buttons for individual result -->
+                    <button id="download-result-csv" class="bg-primary-blue text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary-dark transition flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> CSV
+                    </button>
+                    <!-- Download all results buttons -->
+                    <button id="download-results-excel" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> Excel (All)
+                    </button>
+                </div>
             </div>
-            <p id="result-explanation" class="text-sm sm:text-base text-gray-700 leading-relaxed mb-4 sm:mb-6 border-l-4 border-gray-200 pl-3 sm:pl-4 italic"></p>
-            
-            <h4 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-primary-dark flex items-center">
-                <i data-lucide="book-open" class="w-4 sm:w-5 h-4 sm:h-5 mr-2"></i> Saran Belajar
-            </h4>
-            <ul id="result-tips" class="tips-list space-y-1 sm:space-y-2 pl-4 sm:pl-5 text-sm sm:text-base text-gray-700"></ul>
 
-            <div id="result-probs" class="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-100 rounded-lg text-sm font-mono"></div>
-
-            <!-- Detailed Results Table for CSV/Excel Upload -->
-            <div id="detailed-results-section" class="mt-6 sm:mt-8 hidden">
-                <h4 class="font-bold text-primary-dark mb-3 sm:mb-4 flex items-center gap-1">
-                    <i data-lucide="list" class="w-4 h-4"></i> Detail Hasil Analisis Siswa
+            <div class="bg-primary-light/50 p-4 sm:p-6 rounded-xl border border-primary-blue/20 mb-6">
+                <h4 class="font-bold text-primary-dark mb-2 flex items-center">
+                    <i data-lucide="info" class="w-5 h-5 mr-2"></i> Penjelasan
                 </h4>
-                <div class="overflow-x-auto">
-                    <table id="detailed-results-table">
+                <p id="result-explanation" class="text-gray-700 leading-relaxed"></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-bold text-primary-dark mb-3 flex items-center">
+                        <i data-lucide="lightbulb" class="w-5 h-5 mr-2"></i> Tips Belajar
+                    </h4>
+                    <ul id="result-tips" class="space-y-2 list-disc list-inside text-gray-700 text-sm"></ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-primary-dark mb-3 flex items-center">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 mr-2"></i> Probabilitas
+                    </h4>
+                    <div id="result-probs" class="flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+
+            <!-- Detailed Results Table for Batch Upload -->
+            <!-- Renamed ID to be more descriptive and updated structure -->
+            <div id="detailed-results-section" class="hidden mt-10 pt-6 border-t">
+                <h4 class="font-bold text-primary-dark mb-4 text-xl">Rincian Hasil Kolektif</h4>
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table id="detailed-results-table" class="min-w-full">
                         <thead>
-                            <tr>
-                                <th class="px-2 sm:px-4 py-2">Nama Siswa</th>
-                                <th class="px-2 sm:px-4 py-2">Kelas</th>
-                                <th class="px-2 sm:px-4 py-2">Tipe Belajar</th>
-                                <th class="px-2 sm:px-4 py-2">Visual (%)</th>
-                                <th class="px-2 sm:px-4 py-2">Auditori (%)</th>
-                                <th class="px-2 sm:px-4 py-2">Kinestetik (%)</th>
+                            <tr class="bg-gray-100">
+                                <th>Nama Siswa</th>
+                                <th>Kelas</th>
+                                <th>Tipe Belajar</th>
+                                <th>Visual</th>
+                                <th>Auditori</th>
+                                <th>Kinestetik</th>
                             </tr>
                         </thead>
-                        <tbody id="detailed-results-body">
-                            <!-- Rows will be populated by JavaScript -->
-                        </tbody>
+                        <tbody id="detailed-results-body"></tbody>
                     </table>
                 </div>
-                <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <button id="download-results-csv" class="bg-primary-blue text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-primary-dark transition duration-300 flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
-                        <i data-lucide="download" class="w-4 sm:w-5 h-4 sm:h-5"></i> Unduh Detail (CSV)
-                    </button>
-                    <button id="download-results-excel" class="bg-green-600 text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-green-700 transition duration-300 flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
-                        <i data-lucide="file-spreadsheet" class="w-4 sm:w-5 h-4 sm:h-5"></i> Unduh Detail (Excel)
-                    </button>
-                </div>
             </div>
-
-            <!-- Filter section for download -->
-            <div class="mt-6 sm:mt-8 p-4 sm:p-6 bg-blue-50 rounded-lg sm:rounded-xl border-l-4 border-primary-blue">
-                <h4 class="font-bold text-primary-dark mb-3 sm:mb-4 flex items-center gap-1">
-                    <i data-lucide="filter" class="w-4 h-4"></i> Filter Data Sebelum Unduh
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4">
-                    <label class="block">
-                        <span class="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">Filter Tanggal (Opsional)</span>
-                        <input type="date" id="filterDate" class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue text-xs sm:text-sm" />
-                    </label>
-                    <label class="block">
-                        <span class="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">Filter Kelas (Opsional)</span>
-                        <input type="text" id="filterClass" placeholder="Contoh: 4A" class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue text-xs sm:text-sm" />
-                    </label>
-                    <label class="block md:col-span-2">
-                        <span class="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">Rentang Tanggal (Opsional)</span>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="date" id="filterDateFrom" placeholder="Dari" class="px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue text-xs sm:text-sm" />
-                            <input type="date" id="filterDateTo" placeholder="Sampai" class="px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue text-xs sm:text-sm" />
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Tombol Unduh -->
-            <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:space-y-0">
-                <button id="downloadResult" class="bg-primary-dark text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-primary-blue transition duration-300 flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
-                    <i data-lucide="download" class="w-4 sm:w-5 h-4 sm:h-5"></i> Unduh Hasil Saat Ini (CSV)
-                </button>
-                <button id="downloadAllResultsCSV" class="bg-primary-blue text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-primary-dark transition duration-300 flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
-                    <i data-lucide="file-text" class="w-4 sm:w-5 h-4 sm:h-5"></i> Unduh Semua (CSV)
-                </button>
-                <button id="downloadAllResultsExcel" class="bg-green-600 text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-green-700 transition duration-300 flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
-                    <i data-lucide="file-spreadsheet" class="w-4 sm:w-5 h-4 sm:h-5"></i> Unduh Semua (Excel)
-                </button>
-            </div>
-        </section>
+        </div>
     </main>
 
     <footer class="bg-primary-dark text-white mt-10">
@@ -594,10 +548,11 @@
         </div>
     </footer>
 
+    <script src="script.js"></script>
     <script>
         const API_BASE = window.API_URL || `${window.location.protocol}//${window.location.hostname}:5004`;
 
-
+        // Function to check authentication token
         function checkAuth() {
             const token = localStorage.getItem("access_token");
             if (!token) {
@@ -607,24 +562,37 @@
             return token;
         }
 
+        // Function to load user information
         function loadUserInfo() {
             const userName = localStorage.getItem("user_name") || "Guru";
             document.getElementById("teacherName").textContent = userName;
         }
 
+        // Event listener for logout button
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.removeItem("access_token");
             localStorage.removeItem("user_name");
             window.location.href = "login.html";
         });
 
-        // Initialize on page load
+        // Initialize simple layout-only triggers or critical setup that isn't in script.js
         window.addEventListener("load", () => {
-            checkAuth();
-            loadUserInfo();
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         });
 
-        // ===== FIELD NUMERIK =====
+        // Simple helper for numeric field limits if not handled by script.js
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value > 100 && this.id.startsWith('nilai_')) this.value = 100;
+                if (this.value > 5 && (this.id.startsWith('daya_') || this.id.startsWith('suka_') || this.id.startsWith('ekskul_'))) this.value = 5;
+                if (this.value < 0 && this.id.startsWith('nilai_')) this.value = 0; // Handle minimums as well
+                if (this.value < 1 && (this.id.startsWith('daya_') || this.id.startsWith('suka_') || this.id.startsWith('ekskul_'))) this.value = 1;
+            });
+        });
+
+        // ===== NUMERIC FIELDS =====
         const fields = [
             "nilai_bahasa", "nilai_mtk", "nilai_ipa", "nilai_ips",
             "rata_rata_umum", "indeks_eksakta", "indeks_non_eksakta",
@@ -632,8 +600,8 @@
             "suka_membaca_mencatat", "ekskul_motorik", "ekskul_musik",
         ];
 
-        // ===== AUTO HITUNG RATA-RATA & INDEKS =====
-        ;["nilai_bahasa", "nilai_mtk", "nilai_ipa", "nilai_ips"].forEach((id) => {
+        // ===== AUTO CALCULATE AVERAGE & INDEX =====
+        ["nilai_bahasa", "nilai_mtk", "nilai_ipa", "nilai_ips"].forEach((id) => {
             document.getElementById(id).addEventListener("input", updateCalculatedFields);
         });
 
@@ -653,7 +621,7 @@
             document.getElementById("indeks_non_eksakta").value = Math.round(nonEksakta);
         }
 
-        // ===== BUAT PAYLOAD =====
+        // ===== CREATE PAYLOAD =====
         function getPayload() {
             const payload = {};
             payload.nama_siswa = document.getElementById("nama_siswa").value || "";
@@ -666,7 +634,7 @@
             return payload;
         }
 
-        // ===== TAMPILKAN HASIL =====
+        // ===== RENDER RESULT =====
         function renderResult(data) {
             const nama = document.getElementById("nama_siswa").value || "Siswa";
             const kelas = document.getElementById("kelas").value || "-";
@@ -717,7 +685,7 @@
             resultEl.hidden = false;
         }
 
-        // ===== BACKUP LOCAL COMPUTE =====
+        // ===== LOCAL COMPUTE (Fallback) =====
         function localCompute(payload) {
             const norm = (v) => Math.max(0, Math.min(100, v)) / 100;
 
@@ -779,7 +747,7 @@
             return { label: best, probabilities: probs, explanation: explain, tips };
         }
 
-        // ===== AMBIL ELEMEN DOM =====
+        // ===== GET DOM ELEMENTS =====
         const form = document.getElementById("analyzer-form");
         const analyzeBtn = document.getElementById("analyzeBtn");
         const resetBtn = document.getElementById("resetBtn");
@@ -789,6 +757,7 @@
         const resultTips = document.getElementById("result-tips");
         const resultProbs = document.getElementById("result-probs");
 
+        // Event listener for analyze button
         analyzeBtn.addEventListener("click", async () => {
             const token = localStorage.getItem("access_token");
             if (!token) {
@@ -837,7 +806,7 @@
             }
         });
 
-        // ===== RESET =====
+        // ===== RESET BUTTON =====
         resetBtn.addEventListener("click", () => {
             form.reset();
             resultEl.hidden = true;
@@ -846,15 +815,15 @@
             document.querySelectorAll('.error-message').forEach(el => el.remove());
         });
 
-        // ===== DOWNLOAD RESULT CSV =====
-        document.getElementById("downloadResult").addEventListener("click", () => {
+        // ===== DOWNLOAD INDIVIDUAL RESULT CSV =====
+        document.getElementById("download-result-csv").addEventListener("click", () => {
             const nama = document.getElementById("nama_siswa").value || "siswa_tanpa_nama";
             const tipeLabelEl = document.getElementById("result-label");
             const tipe = tipeLabelEl.textContent.trim() || "-";
             const penjelasan = document.getElementById("result-explanation").textContent.replace(/\n/g, " ") || "-";
             const tips = Array.from(document.querySelectorAll("#result-tips li")).map((li) => li.textContent.trim()).join("; ") || "-";
 
-            if (tipe === '-' || tipe === 'Hasil Analisis') { // Check if any analysis was done
+            if (tipe === '-' || tipe === 'Hasil Klasifikasi') { // Check if any analysis was done
                 alert("Tidak ada hasil analisis yang tersedia untuk diunduh.");
                 return;
             }
@@ -880,94 +849,11 @@
             URL.revokeObjectURL(url);
         });
 
-        // ===== DOWNLOAD ALL RESULTS =====
-        document.getElementById("downloadAllResultsCSV").addEventListener("click", async () => {
-            await downloadFiltered('csv');
-        });
-
-        document.getElementById("downloadAllResultsExcel").addEventListener("click", async () => {
-            await downloadFiltered('excel');
-        });
-
-        async function downloadFiltered(format) {
-            const token = localStorage.getItem("access_token");
-            if (!token) {
-                alert("Token tidak ditemukan. Silakan login kembali.");
-                window.location.href = "login.html";
-                return;
-            }
-
-            const filterData = {
-                format: format,
-                kelas: document.getElementById("filterClass").value || null,
-                date: document.getElementById("filterDate").value || null, // For single date filter
-                date_from: document.getElementById("filterDateFrom").value || null, // For date range start
-                date_to: document.getElementById("filterDateTo").value || null,   // For date range end
-            };
-
-            // Remove null/empty values to avoid sending unnecessary filters to backend
-            Object.keys(filterData).forEach(key => {
-                if (filterData[key] === null || filterData[key] === '') {
-                    delete filterData[key];
-                }
-            });
-
-            try {
-                const resp = await fetch(`${API_BASE}/api/download-all`, {
-                    method: "POST", // Changed to POST to send filter data in the body
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}` // Use Bearer token
-                    },
-                    body: JSON.stringify(filterData)
-                });
-
-                if (resp.status === 401 || resp.status === 403) {
-                    alert("Token sudah tidak valid atau kedaluwarsa. Silakan login kembali.");
-                    localStorage.removeItem("access_token");
-                    localStorage.removeItem("user_name");
-                    window.location.href = "login.html";
-                    return;
-                }
-
-                if (resp.status === 404) {
-                    alert("Tidak ada data yang sesuai dengan filter yang dipilih.");
-                    return;
-                }
-
-                if (!resp.ok) {
-                    const errData = await resp.json().catch(() => ({})); // Safely parse JSON error
-                    throw new Error(`Backend error: ${errData.detail || errData.message || resp.statusText}`);
-                }
-
-                const blob = await resp.blob();
-                if (blob.size === 0) {
-                    alert("File kosong. Tidak ada data yang dapat diunduh.");
-                    return;
-                }
-
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = format === 'excel' ? 'hasil_klasifikasi_semua.xlsx' : 'hasil_klasifikasi_semua.csv';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-
-                console.log(`[v0] File ${format.toUpperCase()} downloaded successfully`);
-            } catch (e) {
-                console.error("[v0] Download error:", e);
-                alert(`Gagal mengunduh file: ${e.message}`);
-            }
-        }
-
-
-        // ===== CSV/Excel Import functionality =====
+        // ===== CSV/Excel Import TABS and HANDLING =====
         const tabManual = document.getElementById('tab-manual');
         const tabCsv = document.getElementById('tab-csv');
         const tabContents = document.querySelectorAll('.tab-content');
-        const csvFileInput = document.getElementById('csv-file');
+        const csvFileInput = document.getElementById('csv-file-input');
         const csvDropZone = document.getElementById('csv-drop-zone');
         const csvPreview = document.getElementById('csv-preview');
         const csvUploadBtn = document.getElementById('csv-upload-btn');
@@ -996,7 +882,7 @@
 
             tabContents.forEach(content => {
                 if ((tab === 'manual' && content.id === 'analyzer-form') || 
-                    (tab === 'csv' && content.id === 'csv-import-section')) {
+                    (tab === 'csv' && content.id === 'csv-section')) { // Changed ID here
                     content.classList.remove('hidden');
                     content.classList.add('active');
                 } else {
@@ -1143,38 +1029,42 @@
         // Displays a preview of the first few rows of the parsed data
         function previewCsvData(data) {
             csvPreview.classList.remove('hidden');
-            document.getElementById('preview-count').textContent = data.length;
+            document.getElementById('preview-count').textContent = data.length; 
 
-            const headerRow = document.getElementById('preview-header');
+            const headerRow = document.getElementById('preview-header'); 
             const bodyRows = document.getElementById('preview-body');
-            headerRow.innerHTML = '';
+            
+            if (headerRow) headerRow.innerHTML = '';
             bodyRows.innerHTML = '';
 
             if (data.length === 0) return;
 
             const headers = Object.keys(data[0]);
-            headers.forEach(header => {
-                const th = document.createElement('th');
-                th.className = 'border border-gray-300 px-4 py-2 text-left font-medium bg-gray-100';
-                th.textContent = header.replace(/_/g, ' ').toUpperCase(); // Make headers more readable
-                headerRow.appendChild(th);
-            });
+            
+            if (headerRow) {
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.className = 'border border-gray-300 px-2 py-1 text-left font-medium bg-gray-100';
+                    th.textContent = header.replace(/_/g, ' ').toUpperCase(); 
+                    headerRow.appendChild(th);
+                });
+            }
 
-            // Show only the first 5 rows for preview
             data.slice(0, 5).forEach(row => {
                 const tr = document.createElement('tr');
                 headers.forEach(header => {
                     const td = document.createElement('td');
-                    td.className = 'border border-gray-300 px-4 py-2';
-                    td.textContent = row[header] !== '' ? row[header] : '-'; // Display '-' for empty cells
+                    td.className = 'border border-gray-300 px-2 py-1';
+                    td.textContent = row[header] !== '' ? row[header] : '-'; 
                     tr.appendChild(td);
                 });
                 bodyRows.appendChild(tr);
             });
+            
             if (data.length > 5) {
                 const tr = document.createElement('tr');
                 const td = document.createElement('td');
-                td.className = 'border border-gray-300 px-4 py-2 text-center italic text-gray-500';
+                td.className = 'border border-gray-300 px-2 py-1 text-center italic text-gray-500';
                 td.colSpan = headers.length;
                 td.textContent = `... dan ${data.length - 5} baris lainnya`;
                 tr.appendChild(td);
@@ -1189,7 +1079,7 @@
                 return;
             }
 
-            const token = localStorage.getItem('access_token'); // Corrected from 'token' to 'access_token'
+            const token = localStorage.getItem('access_token');
             if (!token) {
                 alert('Sesi Anda telah berakhir. Silakan login kembali.');
                 window.location.href = 'login.html';
@@ -1203,29 +1093,44 @@
             let errorCount = 0;
             const csvResults = []; // Store individual results for potential display
 
-            // Helper function to calculate derived fields
-            const calculateDerivedFields = (row) => {
-                const nilai_bahasa = parseFloat(row.nilai_bahasa) || 0;
-                const nilai_mtk = parseFloat(row.nilai_mtk) || 0;
-                const nilai_ipa = parseFloat(row.nilai_ipa) || 0;
-                const nilai_ips = parseFloat(row.nilai_ips) || 0;
+            // Helper function to calculate derived fields and normalize input for prediction
+            const calculateAndValidatePayload = (row) => {
+                const mappedRow = {};
+                mappedRow.nama_siswa = row.nama_siswa || row.nama || '';
+                mappedRow.kelas = row.kelas || '';
+                
+                mappedRow.nilai_bahasa = Math.max(0, Math.min(100, parseFloat(row.nilai_bahasa) || 0));
+                mappedRow.nilai_mtk = Math.max(0, Math.min(100, parseFloat(row.nilai_mtk) || 0));
+                mappedRow.nilai_ipa = Math.max(0, Math.min(100, parseFloat(row.nilai_ipa) || 0));
+                mappedRow.nilai_ips = Math.max(0, Math.min(100, parseFloat(row.nilai_ips) || 0));
+
+                mappedRow.daya_visual_gambar = Math.max(1, Math.min(5, parseInt(row.daya_visual_gambar) || 3));
+                mappedRow.mengingat_suara = Math.max(1, Math.min(5, parseInt(row.mengingat_suara) || 3));
+                mappedRow.suka_praktik = Math.max(1, Math.min(5, parseInt(row.suka_praktik) || 3));
+                mappedRow.suka_membaca_mencatat = Math.max(1, Math.min(5, parseInt(row.suka_membaca_mencatat) || 3));
+                mappedRow.ekskul_motorik = Math.max(1, Math.min(5, parseInt(row.ekskul_motorik) || 3));
+                mappedRow.ekskul_musik = Math.max(1, Math.min(5, parseInt(row.ekskul_musik) || 3));
+
+                const avg = (mappedRow.nilai_bahasa + mappedRow.nilai_mtk + mappedRow.nilai_ipa + mappedRow.nilai_ips) / 4;
+                const eksakta = (mappedRow.nilai_mtk + mappedRow.nilai_ipa) / 2;
+                const nonEksakta = (mappedRow.nilai_bahasa + mappedRow.nilai_ips) / 2;
 
                 const payload = {
-                    nama_siswa: row.nama_siswa || '',
-                    kelas: row.kelas || '',
-                    nilai_bahasa: nilai_bahasa,
-                    nilai_mtk: nilai_mtk,
-                    nilai_ipa: nilai_ipa,
-                    nilai_ips: nilai_ips,
-                    rata_rata_umum: parseFloat(((nilai_bahasa + nilai_mtk + nilai_ipa + nilai_ips) / 4).toFixed(2)),
-                    indeks_eksakta: parseFloat(((nilai_mtk + nilai_ipa) / 2).toFixed(2)),
-                    indeks_non_eksakta: parseFloat(((nilai_bahasa + nilai_ips) / 2).toFixed(2)),
-                    daya_visual_gambar: parseInt(row.daya_visual_gambar) || 3,
-                    mengingat_suara: parseInt(row.mengingat_suara) || 3,
-                    suka_praktik: parseInt(row.suka_praktik) || 3,
-                    suka_membaca_mencatat: parseInt(row.suka_membaca_mencatat) || 3,
-                    ekskul_motorik: parseInt(row.ekskul_motorik) || 3,
-                    ekskul_musik: parseInt(row.ekskul_musik) || 3,
+                    nama_siswa: mappedRow.nama_siswa,
+                    kelas: mappedRow.kelas,
+                    nilai_bahasa: mappedRow.nilai_bahasa,
+                    nilai_mtk: mappedRow.nilai_mtk,
+                    nilai_ipa: mappedRow.nilai_ipa,
+                    nilai_ips: mappedRow.nilai_ips,
+                    rata_rata_umum: parseFloat(avg.toFixed(2)), 
+                    indeks_eksakta: parseFloat(eksakta.toFixed(2)),
+                    indeks_non_eksakta: parseFloat(nonEksakta.toFixed(2)),
+                    daya_visual_gambar: mappedRow.daya_visual_gambar,
+                    mengingat_suara: mappedRow.mengingat_suara,
+                    suka_praktik: mappedRow.suka_praktik,
+                    suka_membaca_mencatat: mappedRow.suka_membaca_mencatat,
+                    ekskul_motorik: mappedRow.ekskul_motorik,
+                    ekskul_musik: mappedRow.ekskul_musik,
                 };
                 return payload;
             };
@@ -1233,7 +1138,7 @@
             // Process each row
             for (let i = 0; i < parsedCsvData.length; i++) {
                 const row = parsedCsvData[i];
-                const payload = calculateDerivedFields(row);
+                const payload = calculateAndValidatePayload(row);
                 
                 try {
                     const resp = await fetch(`${API_BASE}/predict`, {
@@ -1247,41 +1152,38 @@
 
                     if (resp.ok) {
                         const data = await resp.json();
-                        csvResults.push({ // Store response data along with student info
+                        csvResults.push({
                             nama_siswa: payload.nama_siswa,
                             kelas: payload.kelas,
-                            ...data
+                            ...data 
                         });
                         successCount++;
                     } else {
-                        const errorDetail = await resp.json().catch(() => ({}));
-                        console.error(`Row ${i + 1} (${payload.nama_siswa}) failed:`, errorDetail);
+                        const errorDetail = await resp.json().catch(() => ({})); 
+                        console.error(`Row ${i + 1} (${payload.nama_siswa || 'Unknown'}) failed:`, errorDetail);
                         errorCount++;
-                        // Optionally store error details for specific row
                     }
                 } catch (e) {
-                    console.error(`Network or unexpected error for row ${i + 1} (${payload.nama_siswa}):`, e);
+                    console.error(`Network or unexpected error for row ${i + 1} (${payload.nama_siswa || 'Unknown'}):`, e);
                     errorCount++;
                 }
 
-                // Update progress bar
                 const progress = ((i + 1) / parsedCsvData.length) * 100;
                 csvProgressText.textContent = `${Math.round(progress)}%`;
                 csvProgressBar.style.width = `${progress}%`;
             }
 
-            // Finalize upload process
             csvUploadBtn.disabled = false;
-            csvResetBtn.disabled = false; // Re-enable reset
+            csvResetBtn.disabled = false; 
             
             const messageText = `Selesai! ${successCount} data berhasil dianalisis, ${errorCount} data gagal.`;
             let messageClass = '';
             if (errorCount === 0) {
-                messageClass = 'bg-green-100 text-green-800';
+                messageClass = 'bg-green-100 text-green-800'; 
             } else if (successCount === 0) {
-                messageClass = 'bg-red-100 text-red-800';
+                messageClass = 'bg-red-100 text-red-800'; 
             } else {
-                messageClass = 'bg-yellow-100 text-yellow-800';
+                messageClass = 'bg-yellow-100 text-yellow-800'; 
             }
 
             csvResultMessage.innerHTML = `<p class="${messageClass} p-3 rounded-lg">${messageText}</p>`;
@@ -1289,13 +1191,11 @@
 
             alert(`Upload data selesai!\nBerhasil: ${successCount}\nGagal: ${errorCount}`);
 
-            // If there are successful results, update the main result section
             if (csvResults.length > 0) {
-                displayCsvResults(csvResults); // Function to display aggregated results
+                displayCsvResults(csvResults); 
             }
         });
 
-        // Displays aggregated results from the CSV upload in the main result section
         function displayCsvResults(results) {
             const resultEl = document.getElementById("result");
             const resultLabel = document.getElementById("result-label");
@@ -1310,33 +1210,116 @@
                 </div>
             `;
             resultTips.innerHTML = '<li class="text-sm text-gray-600">Total: ' + results.length + ' siswa telah dianalisis dengan sukses.</li>';
-            resultProbs.innerHTML = ''; // Clear probabilities for aggregated view
+            resultProbs.innerHTML = ''; 
             
             resultEl.hidden = false;
             
             showDetailedResults(results);
             
-            // Optionally scroll to the results section
             resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // Resets the CSV import section
         csvResetBtn.addEventListener('click', () => {
-            csvFileInput.value = ''; // Clear file input
-            parsedCsvData = []; // Clear parsed data
-            csvPreview.classList.add('hidden'); // Hide preview
-            csvProgress.classList.add('hidden'); // Hide progress
-            csvResultMessage.innerHTML = ''; // Clear message
+            csvFileInput.value = ''; 
+            parsedCsvData = []; 
+            csvPreview.classList.add('hidden'); 
+            csvProgress.classList.add('hidden'); 
+            csvResultMessage.innerHTML = ''; 
             csvResultMessage.classList.add('hidden');
-            csvUploadBtn.disabled = true; // Disable upload button
-            csvResetBtn.disabled = false; // Re-enable reset button
-            document.getElementById('selected-file-info').classList.add('hidden'); // Hide file info
+            csvUploadBtn.disabled = true; 
+            csvResetBtn.disabled = false; 
+            document.getElementById('selected-file-info').classList.add('hidden'); 
             document.getElementById('selected-file-name').textContent = '';
-            document.getElementById('detailed-results-section').classList.add('hidden'); // Hide detailed results table
+            document.getElementById('detailed-results-section').classList.add('hidden'); 
+            document.getElementById('result').hidden = true; 
         });
 
-        // Download CSV template
-        document.getElementById('download-template').addEventListener('click', (e) => {
+        async function downloadFiltered(format) {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                alert("Token tidak ditemukan. Silakan login kembali.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const filterClass = document.getElementById("filterClass")?.value || null;
+            const filterDate = document.getElementById("filterDate")?.value || null;
+            const filterDateFrom = document.getElementById("filterDateFrom")?.value || null;
+            const filterDateTo = document.getElementById("filterDateTo")?.value || null;
+
+            const filterData = {
+                format: format,
+                kelas: filterClass,
+                date: filterDate,
+                date_from: filterDateFrom,
+                date_to: filterDateTo,
+            };
+
+            Object.keys(filterData).forEach(key => {
+                if (filterData[key] === null || filterData[key] === '') {
+                    delete filterData[key];
+                }
+            });
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/download-all`, {
+                    method: "POST", 
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}` 
+                    },
+                    body: JSON.stringify(filterData)
+                });
+
+                if (resp.status === 401 || resp.status === 403) {
+                    alert("Token sudah tidak valid atau kedaluwarsa. Silakan login kembali.");
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("user_name");
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                if (resp.status === 404) {
+                    alert("Tidak ada data yang sesuai dengan filter yang dipilih.");
+                    return;
+                }
+
+                if (!resp.ok) {
+                    const errData = await resp.json().catch(() => ({})); 
+                    throw new Error(`Backend error: ${errData.detail || errData.message || resp.statusText}`);
+                }
+
+                const blob = await resp.blob();
+                if (blob.size === 0) {
+                    alert("File kosong. Tidak ada data yang dapat diunduh.");
+                    return;
+                }
+
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = format === 'excel' ? 'hasil_klasifikasi_semua.xlsx' : 'hasil_klasifikasi_semua.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+
+                console.log(`[v0] File ${format.toUpperCase()} downloaded successfully`);
+            } catch (e) {
+                console.error("[v0] Download error:", e);
+                alert(`Gagal mengunduh file: ${e.message}`);
+            }
+        }
+
+        document.getElementById("download-results-excel").addEventListener("click", async () => {
+            await downloadFiltered('excel');
+        });
+        
+        document.getElementById("download-results-csv").addEventListener("click", async () => {
+            await downloadFiltered('csv');
+        });
+
+        document.getElementById('download-template-csv').addEventListener('click', (e) => { 
             e.preventDefault();
             const template = 'nama_siswa,kelas,nilai_bahasa,nilai_mtk,nilai_ipa,nilai_ips,daya_visual_gambar,mengingat_suara,suka_praktik,suka_membaca_mencatat,ekskul_motorik,ekskul_musik\nContoh Siswa,4A,85,75,80,78,4,3,4,4,3,3\nSiswa Lain,4B,78,82,85,75,3,4,5,3,4,2';
             const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
@@ -1350,11 +1333,9 @@
             URL.revokeObjectURL(url);
         });
 
-        // Download Excel template
-        document.getElementById('download-template-excel').addEventListener('click', (e) => {
+        document.getElementById('download-template-excel').addEventListener('click', (e) => { 
             e.preventDefault();
             
-            // Data for the Excel template
             const templateData = [
                 {
                     nama_siswa: 'Contoh Siswa 1',
@@ -1386,50 +1367,46 @@
                 }
             ];
 
-            // Create workbook and worksheet
             const ws = XLSX.utils.json_to_sheet(templateData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
 
-            // Set column widths for better readability
             ws['!cols'] = [
-                { wch: 20 }, // nama_siswa
-                { wch: 8 },  // kelas
-                { wch: 12 }, // nilai_bahasa
-                { wch: 10 }, // nilai_mtk
-                { wch: 10 }, // nilai_ipa
-                { wch: 10 }, // nilai_ips
-                { wch: 18 }, // daya_visual_gambar
-                { wch: 15 }, // mengingat_suara
-                { wch: 12 }, // suka_praktik
-                { wch: 20 }, // suka_membaca_mencatat
-                { wch: 14 }, // ekskul_motorik
-                { wch: 12 }, // ekskul_musik
+                { wch: 20 }, 
+                { wch: 8 },  
+                { wch: 12 }, 
+                { wch: 10 }, 
+                { wch: 10 }, 
+                { wch: 10 }, 
+                { wch: 18 }, 
+                { wch: 15 }, 
+                { wch: 12 }, 
+                { wch: 20 }, 
+                { wch: 14 }, 
+                { wch: 12 }, 
             ];
 
-            // Trigger download
             XLSX.writeFile(wb, 'template_siswa.xlsx');
         });
 
-        // Initialize Lucide Icons
-        lucide.createIcons();
-
-        // Store detailed results from CSV import for download
         let detailedResults = [];
 
-        // Function to display detailed results in table
         function showDetailedResults(results) {
             const detailedSection = document.getElementById('detailed-results-section');
             const resultsBody = document.getElementById('detailed-results-body');
             
-            detailedResults = results; // Store for download later
+            detailedResults = results; 
             resultsBody.innerHTML = '';
 
             results.forEach(result => {
                 const tr = document.createElement('tr');
-                const visual = ((result.probabilities?.Visual ?? 0) * 100).toFixed(1);
-                const auditori = ((result.probabilities?.Auditori ?? 0) * 100).toFixed(1);
-                const kinestetik = ((result.probabilities?.Kinestetik ?? 0) * 100).toFixed(1);
+                const visualProb = result.probabilities?.Visual ?? 0;
+                const auditoriProb = result.probabilities?.Auditori ?? 0;
+                const kinestetikProb = result.probabilities?.Kinestetik ?? 0;
+
+                const visual = (visualProb * 100).toFixed(1);
+                const auditori = (auditoriProb * 100).toFixed(1);
+                const kinestetik = (kinestetikProb * 100).toFixed(1);
                 
                 tr.innerHTML = `
                     <td class="border border-gray-300 px-2 sm:px-4 py-2">${result.nama_siswa}</td>
@@ -1445,40 +1422,6 @@
             detailedSection.classList.remove('hidden');
         }
 
-        // Download results as CSV
-        document.getElementById('download-results-csv').addEventListener('click', () => {
-            if (detailedResults.length === 0) {
-                alert('Tidak ada data untuk diunduh.');
-                return;
-            }
-
-            const headers = ['Nama Siswa', 'Kelas', 'Tipe Belajar', 'Visual (%)', 'Auditori (%)', 'Kinestetik (%)'];
-            const rows = detailedResults.map(result => [
-                result.nama_siswa,
-                result.kelas,
-                result.label,
-                ((result.probabilities?.Visual ?? 0) * 100).toFixed(1),
-                ((result.probabilities?.Auditori ?? 0) * 100).toFixed(1),
-                ((result.probabilities?.Kinestetik ?? 0) * 100).toFixed(1)
-            ]);
-
-            let csvContent = headers.join(',') + '\n';
-            rows.forEach(row => {
-                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `hasil_analisis_${new Date().getTime()}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
-
-        // Download results as Excel
         document.getElementById('download-results-excel').addEventListener('click', () => {
             if (detailedResults.length === 0) {
                 alert('Tidak ada data untuk diunduh.');
@@ -1499,12 +1442,12 @@
             XLSX.utils.book_append_sheet(wb, ws, 'Hasil Analisis');
 
             ws['!cols'] = [
-                { wch: 20 },
-                { wch: 8 },
-                { wch: 15 },
-                { wch: 12 },
-                { wch: 12 },
-                { wch: 12 }
+                { wch: 20 }, 
+                { wch: 8 },  
+                { wch: 15 }, 
+                { wch: 12 }, 
+                { wch: 12 }, 
+                { wch: 12 }  
             ];
 
             XLSX.writeFile(wb, `hasil_analisis_${new Date().getTime()}.xlsx`);

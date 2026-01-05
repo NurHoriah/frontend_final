@@ -284,6 +284,29 @@
             background-color: #dcfce7;
             display: block;
         }
+
+        /* OTP expiry timer styling */
+        .otp-timer {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background-color: #f1f5f9;
+            border-radius: 0.4rem;
+            text-align: center;
+        }
+
+        .otp-timer.warning {
+            background-color: #fef3c7;
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        .otp-timer.expired {
+            background-color: #fee2e2;
+            color: #dc2626;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -324,7 +347,7 @@
                     />
                 </div>
 
-                <!-- added OTP field for verification -->
+                <!-- OTP field dengan timer expiry -->
                 <div id="otpField" style="display: none;">
                     <label for="otp">Kode OTP (Cek Email Anda)</label>
                     <input
@@ -333,6 +356,9 @@
                         placeholder="Masukkan 6 digit kode"
                         maxlength="6"
                     />
+                    <div id="otpTimer" class="otp-timer">
+                        OTP kadaluarsa dalam <span id="otpCountdown">5:00</span>
+                    </div>
                 </div>
 
                 <div id="emailSection">
@@ -396,10 +422,14 @@
         const passwordSection = document.getElementById("passwordSection");
         const submitBtn = document.getElementById("submitBtn");
         const googleSection = document.getElementById("googleSection");
+        const otpTimer = document.getElementById("otpTimer");
+        const otpCountdown = document.getElementById("otpCountdown");
 
         let isLogin = true;
         let isVerifying = false;
         let verifyingEmail = "";
+        let otpExpiryTime = null; // Track OTP expiry time
+        let otpCountdownInterval = null; // Track countdown interval
 
         const BACKEND_URL = window.location.hostname === 'localhost'
             ? 'http://localhost:5004'
@@ -427,6 +457,40 @@
                 return false;
             }
             return true;
+        }
+
+        function startOtpCountdown() {
+            otpExpiryTime = Date.now() + (5 * 60 * 1000); // 5 menit dari sekarang
+
+            // Clear interval lama jika ada
+            if (otpCountdownInterval) clearInterval(otpCountdownInterval);
+
+            // Update setiap detik
+            otpCountdownInterval = setInterval(() => {
+                const remaining = otpExpiryTime - Date.now();
+                
+                if (remaining <= 0) {
+                    clearInterval(otpCountdownInterval);
+                    otpTimer.classList.add('expired');
+                    otpTimer.classList.remove('warning');
+                    otpCountdown.textContent = "Kadaluarsa";
+                    otpCountdown.parentElement.style.cursor = 'not-allowed';
+                    document.getElementById('otp').disabled = true;
+                    submitBtn.disabled = true;
+                    return;
+                }
+
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.floor((remaining % 60000) / 1000);
+                otpCountdown.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                // Ubah warna ke warning jika tinggal 1 menit
+                if (remaining < 60000) {
+                    otpTimer.classList.add('warning');
+                } else {
+                    otpTimer.classList.remove('warning');
+                }
+            }, 1000);
         }
 
         window.handleGoogleLogin = async function(response) {
@@ -527,6 +591,7 @@
             e.preventDefault();
             isLogin = !isLogin;
             isVerifying = false;
+            if (otpCountdownInterval) clearInterval(otpCountdownInterval);
             formTitle.textContent = isLogin ? "Login" : "Register";
             submitBtn.textContent = isLogin ? "Masuk" : "Daftar";
             toggleText.textContent = isLogin
@@ -550,6 +615,12 @@
             clearMessage();
             try {
                 if (isVerifying) {
+                    if (otpExpiryTime && Date.now() > otpExpiryTime) {
+                        showMessage("OTP sudah kadaluarsa. Silakan registrasi ulang.", "error");
+                        setLoading(false);
+                        return;
+                    }
+
                     const otp = document.getElementById("otp").value.trim();
                     if (!otp || otp.length !== 6) {
                         showMessage("Masukkan 6 digit kode OTP yang valid!", "error");
@@ -566,6 +637,7 @@
                     const data = await response.json();
                     if (response.ok) {
                         showMessage("Email berhasil diverifikasi! Silakan login.", "success");
+                        if (otpCountdownInterval) clearInterval(otpCountdownInterval);
                         setTimeout(() => {
                             isVerifying = false;
                             isLogin = true;
@@ -666,6 +738,7 @@
                         emailSection.style.display = "none";
                         passwordSection.style.display = "none";
                         otpField.style.display = "block";
+                        startOtpCountdown();
                     } else {
                         showMessage(data.message || "Registrasi gagal!", "error");
                         setLoading(false);
