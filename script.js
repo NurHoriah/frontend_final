@@ -2,8 +2,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const XLSX = window.XLSX;
   const TOKEN = localStorage.getItem("access_token");
 
-  // --- 1. PROTEKSI HALAMAN ---
+  // --- 1. PROTEKSI HALAMAN & TOKEN CHECK ---
   if (!TOKEN) {
+    window.location.replace("login.html");
+    return;
+  }
+
+  // Fungsi cek jika token sudah kadaluarsa (Payload JWT)
+  function isTokenExpired(token) {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return Math.floor(Date.now() / 1000) >= payload.exp;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  if (isTokenExpired(TOKEN)) {
+    localStorage.clear();
     window.location.replace("login.html");
     return;
   }
@@ -15,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- 2. USER INTERFACE (NAMA GURU) ---
   const teacherName = document.getElementById("teacherName");
   if (teacherName) {
-    // Mengambil nama dari localStorage yang disimpan saat login
     teacherName.textContent = localStorage.getItem("user_name") || "Guru Penguji";
   }
 
@@ -36,9 +51,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const csvProgressBar = document.getElementById("csv-progress-bar");
   const csvProgressText = document.getElementById("csv-progress-text");
   const csvDropZone = document.getElementById("csv-drop-zone");
+  const fileStatusText = document.getElementById("file-status-text");
+  const selectedFileInfo = document.getElementById("selected-file-info");
+  const selectedFileName = document.getElementById("selected-file-name");
 
   let parsedCsvData = [];
-  let detailedResults = []; // PENTING: Variabel ini sekarang dijamin terisi untuk Unduh All
+  let detailedResults = []; 
 
   // --- 3. AUTO HITUNG (RATA-RATA & INDEKS) ---
   const scoreFields = ["nilai_bahasa", "nilai_mtk", "nilai_ipa", "nilai_ips"];
@@ -95,29 +113,37 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function handleFile(file) {
-    document.getElementById("selected-file-name").textContent = file.name;
-    document.getElementById("selected-file-info").classList.remove("hidden");
-    
-    // Pastikan tombol analisis menyala
-    csvUploadBtn.disabled = false;
-    csvUploadBtn.classList.remove("opacity-50", "cursor-not-allowed");
+    if (selectedFileName) selectedFileName.textContent = file.name;
+    if (selectedFileInfo) selectedFileInfo.classList.remove("hidden");
+    if (fileStatusText) fileStatusText.textContent = "File terpilih: " + file.name;
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-      if (jsonData.length > 0) {
-        const headers = jsonData[0].map(h => String(h).trim().toLowerCase());
-        const rows = jsonData.slice(1);
-        parsedCsvData = rows.filter(r => r.length > 0).map(row => {
-          const obj = {};
-          headers.forEach((h, i) => obj[h] = row[i]);
-          return obj;
-        });
-        previewData(parsedCsvData.slice(0, 5));
+        if (jsonData.length > 1) {
+          const headers = jsonData[0].map(h => String(h).trim().toLowerCase());
+          const rows = jsonData.slice(1);
+          parsedCsvData = rows.filter(r => r.length > 0).map(row => {
+            const obj = {};
+            headers.forEach((h, i) => obj[h] = row[i]);
+            return obj;
+          });
+
+          // Aktifkan tombol analisis setelah data siap
+          if (csvUploadBtn) {
+            csvUploadBtn.disabled = false;
+            csvUploadBtn.classList.remove("opacity-50", "cursor-not-allowed");
+          }
+          previewData(parsedCsvData.slice(0, 5));
+        }
+      } catch (err) {
+        console.error("Error reading file:", err);
+        alert("Gagal membaca file Excel.");
       }
     };
     reader.readAsArrayBuffer(file);
@@ -134,7 +160,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <td class="border px-2 py-1 text-xs text-center">${row.nilai_mtk || 0}</td>
       </tr>
     `).join("");
-    document.getElementById("csv-preview").classList.remove("hidden");
+    const previewSection = document.getElementById("csv-preview");
+    if (previewSection) previewSection.classList.remove("hidden");
   }
 
   // --- 6. PROSES ANALISIS KOLEKTIF (DB CONNECTED) ---
@@ -143,8 +170,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     csvUploadBtn.disabled = true;
     csvUploadBtn.textContent = "Sedang Memproses...";
-    csvProgress.classList.remove("hidden");
-    detailedResults = []; // Reset penampung agar data fresh
+    if (csvProgress) csvProgress.classList.remove("hidden");
+    detailedResults = []; 
 
     for (let i = 0; i < parsedCsvData.length; i++) {
       const row = parsedCsvData[i];
@@ -175,25 +202,27 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const res = await fetch(`${BACKEND_URL}/predict`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${TOKEN}` },
+          headers: { 
+            "Content-Type": "application/json", 
+            "Authorization": TOKEN 
+          },
           body: JSON.stringify(payload)
         });
         if (res.ok) {
           const data = await res.json();
-          // Simpan hasil ke variabel global agar bisa didownload
           detailedResults.push({ ...payload, ...data });
         }
       } catch (err) { console.error("Error pada baris " + i, err); }
 
       const pct = Math.round(((i + 1) / parsedCsvData.length) * 100);
-      csvProgressBar.style.width = pct + "%";
-      csvProgressText.textContent = pct + "%";
+      if (csvProgressBar) csvProgressBar.style.width = pct + "%";
+      if (csvProgressText) csvProgressText.textContent = pct + "%";
     }
 
     renderBatchResults(detailedResults);
     csvUploadBtn.disabled = false;
     csvUploadBtn.textContent = "Analisis Selesai";
-    alert("Analisis Kolektif Selesai!");
+    alert("Analisis Kolektif Selesai & Tersimpan ke Database!");
   });
 
   function renderBatchResults(results) {
@@ -209,9 +238,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <td class="border px-4 py-2 text-center text-xs">${((r.probabilities?.Kinestetik || 0) * 100).toFixed(0)}%</td>
       </tr>
     `).join("");
-    document.getElementById("detailed-results-section").classList.remove("hidden");
-    resultEl.hidden = false;
-    resultLabel.textContent = results.length + " Siswa Berhasil Dianalisis";
+    const section = document.getElementById("detailed-results-section");
+    if (section) section.classList.remove("hidden");
+    if (resultEl) resultEl.hidden = false;
+    if (resultLabel) resultLabel.textContent = results.length + " Siswa Berhasil Dianalisis";
     resultEl.scrollIntoView({ behavior: 'smooth' });
   }
 
@@ -249,12 +279,16 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const res = await fetch(`${BACKEND_URL}/predict`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${TOKEN}` },
+        headers: { 
+            "Content-Type": "application/json", 
+            "Authorization": TOKEN 
+        },
         body: JSON.stringify(payload)
       });
       if (res.ok) {
         const data = await res.json();
         renderSingleResult(data, payload.nama_siswa);
+        alert("Data manual tersimpan ke database!");
       } else {
         alert("Gagal menganalisis. Cek kembali kelengkapan data.");
       }
@@ -265,42 +299,65 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function renderSingleResult(data, name) {
-    resultEl.hidden = false;
-    resultLabel.textContent = data.label || data.prediction;
-    resultExplanation.textContent = data.explanation || `Berdasarkan data, ${name} memiliki kecenderungan tipe belajar ${data.label || data.prediction}.`;
-    resultTips.innerHTML = (data.tips || []).map(t => `<li>${t}</li>`).join("");
+    if (resultEl) resultEl.hidden = false;
+    if (resultLabel) resultLabel.textContent = data.label || data.prediction;
+    if (resultExplanation) resultExplanation.textContent = data.explanation || `Berdasarkan data, ${name} memiliki kecenderungan tipe belajar ${data.label || data.prediction}.`;
+    if (resultTips) resultTips.innerHTML = (data.tips || []).map(t => `<li>${t}</li>`).join("");
     
-    resultProbs.innerHTML = "";
-    Object.entries(data.probabilities || {}).forEach(([k, v]) => {
-      const s = document.createElement("span");
-      s.className = "px-3 py-1 bg-primary-light text-primary-dark rounded-full text-xs font-bold mr-2 mb-2 inline-block";
-      s.textContent = `${k}: ${(v * 100).toFixed(1)}%`;
-      resultProbs.appendChild(s);
-    });
-    resultEl.scrollIntoView({ behavior: 'smooth' });
+    if (resultProbs) {
+      resultProbs.innerHTML = "";
+      Object.entries(data.probabilities || {}).forEach(([k, v]) => {
+        const s = document.createElement("span");
+        s.className = "px-3 py-1 bg-primary-light text-primary-dark rounded-full text-xs font-bold mr-2 mb-2 inline-block";
+        s.textContent = `${k}: ${(v * 100).toFixed(1)}%`;
+        resultProbs.appendChild(s);
+      });
+    }
+    resultEl?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // --- 8. UNDUH HASIL ANALISIS (EXCEL) ---
-  document.getElementById("download-results-excel")?.addEventListener("click", () => {
-    // Mengecek apakah detailedResults punya isi
-    if (!detailedResults || detailedResults.length === 0) {
-       alert("Tidak ada data untuk diunduh. Lakukan analisis kolektif sampai muncul tabel di bawah terlebih dahulu.");
-       return;
+  // --- 8. UNDUH SEMUA DATA DARI DATABASE (HISTORY GURU) ---
+  // Tombol "Unduh Database" disesuaikan dengan ID yang ada di index.html kamu
+  document.getElementById("download-results-excel")?.addEventListener("click", async (e) => {
+    // Jika tidak ada data di tabel (analisis baru), maka tarik dari database
+    if (detailedResults.length === 0) {
+      try {
+          const response = await fetch(`${BACKEND_URL}/api/download-all?format=excel`, {
+              method: "GET",
+              headers: { "Authorization": TOKEN }
+          });
+
+          if (response.ok) {
+              const blob = await response.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "Seluruh_Data_Siswa_Saya.xlsx";
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+          } else {
+              alert("Gagal menarik data dari database.");
+          }
+      } catch (error) {
+          console.error("Download database error:", error);
+      }
+    } else {
+      // Jika ada data di tabel, lakukan download local seperti biasa
+      const exportData = detailedResults.map(r => ({
+        "Nama Siswa": r.nama_siswa,
+        "Kelas": r.kelas,
+        "Hasil": r.label || r.prediction,
+        "Visual (%)": ((r.probabilities?.Visual || 0) * 100).toFixed(1),
+        "Auditori (%)": ((r.probabilities?.Auditori || 0) * 100).toFixed(1),
+        "Kinestetik (%)": ((r.probabilities?.Kinestetik || 0) * 100).toFixed(1)
+      }));
+      
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Hasil Analisis");
+      XLSX.writeFile(wb, "Hasil_Klasifikasi_Kolektif.xlsx");
     }
-    
-    const exportData = detailedResults.map(r => ({
-      "Nama Siswa": r.nama_siswa,
-      "Kelas": r.kelas,
-      "Hasil Klasifikasi": r.label || r.prediction,
-      "Visual (%)": ((r.probabilities?.Visual || 0) * 100).toFixed(1),
-      "Auditori (%)": ((r.probabilities?.Auditori || 0) * 100).toFixed(1),
-      "Kinestetik (%)": ((r.probabilities?.Kinestetik || 0) * 100).toFixed(1)
-    }));
-    
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Hasil Analisis");
-    XLSX.writeFile(wb, "Hasil_Klasifikasi_Kolektif_INKA.xlsx");
   });
 
   // --- 9. TAB SWITCHING & LOGOUT ---
@@ -310,17 +367,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const sectionCsv = document.getElementById("csv-section");
 
   btnManual?.addEventListener("click", () => {
-    sectionManual.classList.remove("hidden");
-    sectionCsv.classList.add("hidden");
-    btnManual.className = "active bg-primary-blue text-white px-4 py-2 rounded shadow-md";
-    btnCsv.className = "px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition";
+    sectionManual?.classList.remove("hidden");
+    sectionCsv?.classList.add("hidden");
+    btnManual.className = "active bg-primary-blue text-white px-4 py-2 rounded shadow-md cursor-pointer";
+    if(btnCsv) btnCsv.className = "px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition cursor-pointer";
   });
 
   btnCsv?.addEventListener("click", () => {
-    sectionManual.classList.add("hidden");
-    sectionCsv.classList.remove("hidden");
-    btnCsv.className = "active bg-primary-blue text-white px-4 py-2 rounded shadow-md";
-    btnManual.className = "px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition";
+    sectionManual?.classList.add("hidden");
+    sectionCsv?.classList.remove("hidden");
+    btnCsv.className = "active bg-primary-blue text-white px-4 py-2 rounded shadow-md cursor-pointer";
+    if(btnManual) btnManual.className = "px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition cursor-pointer";
   });
 
   csvResetBtn?.addEventListener("click", () => {
