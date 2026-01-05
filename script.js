@@ -256,22 +256,30 @@ document.addEventListener("DOMContentLoaded", () => {
     resultEl.hidden = false
     resultLabel.textContent = `${results.length} Siswa Teranalisis`
     const body = document.getElementById("detailed-results-body")
+    const detailedSection = document.getElementById("detailed-results-section")
+
     if (body) {
       body.innerHTML = results
         .map(
           (r) => `
-        <tr>
-          <td class="border px-4 py-2">${r.nama_siswa}</td>
-          <td class="border px-4 py-2">${r.kelas}</td>
-          <td class="border px-4 py-2 font-bold text-primary-dark">${r.label || r.prediction}</td>
-          <td class="border px-4 py-2">${((r.probabilities?.Visual || 0) * 100).toFixed(1)}%</td>
-          <td class="border px-4 py-2">${((r.probabilities?.Auditori || 0) * 100).toFixed(1)}%</td>
-          <td class="border px-4 py-2">${((r.probabilities?.Kinestetik || 0) * 100).toFixed(1)}%</td>
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="border border-gray-300 px-4 py-2 font-medium">${r.nama_siswa}</td>
+          <td class="border border-gray-300 px-4 py-2 text-center">${r.kelas}</td>
+          <td class="border border-gray-300 px-4 py-2 font-bold text-primary-dark">${r.label || r.prediction}</td>
+          <td class="border border-gray-300 px-4 py-2 text-sm">${((r.probabilities?.Visual || 0) * 100).toFixed(1)}%</td>
+          <td class="border border-gray-300 px-4 py-2 text-sm">${((r.probabilities?.Auditori || 0) * 100).toFixed(1)}%</td>
+          <td class="border border-gray-300 px-4 py-2 text-sm">${((r.probabilities?.Kinestetik || 0) * 100).toFixed(1)}%</td>
         </tr>
       `,
         )
         .join("")
-      document.getElementById("detailed-results-section").classList.remove("hidden")
+      
+      if (detailedSection) {
+          detailedSection.classList.remove("hidden")
+      }
+      
+      // Agar layar otomatis geser ke bawah melihat hasil
+      resultEl.scrollIntoView({ behavior: 'smooth' });
     }
   }
 
@@ -287,22 +295,43 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  document.getElementById("download-results-excel").addEventListener("click", async () => {
-    let dataToExport = detailedResults
+ document.getElementById("download-results-excel").addEventListener("click", async () => {
+    let rawData = detailedResults
 
-    if (dataToExport.length === 0) {
-      // Fetch from history if local is empty
+    if (rawData.length === 0) {
+      // Ambil dari riwayat jika data lokal kosong
       const res = await fetch(`${BACKEND_URL}/api/history`, {
         headers: { Authorization: `Bearer ${TOKEN}` },
       })
-      if (res.ok) dataToExport = await res.json()
+      if (res.ok) rawData = await res.json()
     }
 
-    if (dataToExport.length > 0) {
-      const ws = XLSX.utils.json_to_sheet(dataToExport)
+    if (rawData.length > 0) {
+      // PROSES MERAPIKAN DATA SEBELUM MASUK EXCEL
+      const excelData = rawData.map(res => ({
+        'Nama Siswa': res.nama_siswa,
+        'Kelas': res.kelas,
+        'Tipe Belajar Dominan': res.label || res.prediction,
+        'Persentase Visual': ((res.probabilities?.Visual || 0) * 100).toFixed(1) + '%',
+        'Persentase Auditori': ((res.probabilities?.Auditori || 0) * 100).toFixed(1) + '%',
+        'Persentase Kinestetik': ((res.probabilities?.Kinestetik || 0) * 100).toFixed(1) + '%'
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(excelData)
       const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, ws, "Hasil Klasifikasi")
-      XLSX.writeFile(wb, "Hasil_Klasifikasi_INKA.xlsx")
+      XLSX.utils.book_append_sheet(wb, ws, "Hasil Analisis")
+
+      // Mengatur lebar kolom agar otomatis pas dengan panjang teks
+      ws['!cols'] = [
+        { wch: 25 }, // Kolom Nama
+        { wch: 10 }, // Kolom Kelas
+        { wch: 20 }, // Kolom Tipe Belajar
+        { wch: 15 }, // Kolom Visual
+        { wch: 15 }, // Kolom Auditori
+        { wch: 15 }  // Kolom Kinestetik
+      ];
+
+      XLSX.writeFile(wb, "Hasil_Klasifikasi_Siswa.xlsx")
     } else {
       alert("Tidak ada data untuk diunduh.")
     }
