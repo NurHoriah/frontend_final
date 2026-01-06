@@ -227,7 +227,7 @@
 
     <section class="py-6 sm:py-8 lg:py-10">
         <div class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row items-center bg-white/90 backdrop-blur-sm p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue gap-4 sm:gap-6 lg:gap-10">
+            <div class="flex flex-col lg:flex-row items-center bg-white/90 backdrop-blur-sm p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue gap-4 sm:gap-6 lg:gap-8">
                 
                 <div class="hero-copy lg:w-1/2 w-full">
                     <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-dark mb-3 sm:mb-4">
@@ -240,17 +240,18 @@
                     </p>
                 </div>
 
-               <div class="lg:w-1/2 w-full flex">
-    <div class="relative w-full rounded-lg sm:rounded-xl overflow-hidden shadow-xl border-4 border-white bg-gray-100 min-h-[300px]">
-        <img 
-            src="assets/inka.png" 
-            alt="Banner SD Insan Kamil" 
-            class="w-full h-full object-cover object-center"
-            onerror="this.src='https://via.placeholder.com/800x600?text=Banner+Belum+Muncul'"
-        />
-        <div class="absolute inset-0 bg-primary-dark/10"></div>
-    </div>
-</div>
+                <!-- Perbaiki banner agar lebih kecil dan rapi -->
+                <div class="lg:w-1/2 w-full">
+                    <div class="relative rounded-lg sm:rounded-xl overflow-hidden shadow-lg transition duration-500 hover:scale-[1.02] transform border-4 border-white">
+                        <img 
+                            src="assets/inka.png" 
+                            alt="Banner Klasifikasi Siswa" 
+                            class="w-full h-48 sm:h-64 lg:h-80 object-cover object-center"
+                            onerror="this.src='https://via.placeholder.com/800x400?text=Logo+Inka'"
+                        />
+                        <div class="absolute inset-0 bg-blue-200/20"></div>
+                    </div>
+                </div>
 
             </div>
         </div>
@@ -364,7 +365,7 @@
                     </select>
                 </label>
                 <label class="block">
-                    <span class="text-sm text-gray-700 font-medium mb-1 block">Ekskul Motorik (Kinestetik)</span>
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Ekskul Motorik / Olahraga</span>
                     <select id="ekskul_motorik" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
                         <option value="1">1 - Tidak Sesuai</option>
                         <option value="2">2 - Kurang Sesuai</option>
@@ -374,8 +375,18 @@
                     </select>
                 </label>
                 <label class="block">
-                    <span class="text-sm text-gray-700 font-medium mb-1 block">Ekskul Musik (Auditori)</span>
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Ekskul Musik / Seni</span>
                     <select id="ekskul_musik" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Konsentrasi Belajar</span>
+                    <select id="konsentrasi_belajar" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
                         <option value="1">1 - Tidak Sesuai</option>
                         <option value="2">2 - Kurang Sesuai</option>
                         <option value="3" selected>3 - Cukup Sesuai</option>
@@ -385,350 +396,120 @@
                 </label>
             </div>
 
-            <div class="actions mt-6 sm:mt-10 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:space-y-0">
-                <button type="button" id="analyzeBtn" class="bg-primary-blue text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-primary-dark transition duration-300 transform hover:scale-[1.02] flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
+            <div class="mt-6 sm:mt-10 flex gap-2 sm:gap-4 flex-wrap">
+                <button id="analyzeBtn" type="submit" class="flex-1 sm:flex-initial px-6 sm:px-8 py-2 sm:py-3 bg-primary-blue text-white rounded-lg font-bold hover:bg-primary-dark transition duration-300 flex items-center justify-center gap-2 text-sm sm:text-base shadow-md">
                     <i data-lucide="zap" class="w-4 sm:w-5 h-4 sm:h-5"></i> Analisis Tipe Karakter
                 </button>
-                <button type="button" id="resetBtn" class="bg-gray-200 text-gray-700 font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl hover:bg-gray-300 transition text-sm sm:text-base flex items-center justify-center gap-2 sm:gap-1">
+                <button type="reset" class="flex-1 sm:flex-initial px-6 sm:px-8 py-2 sm:py-3 bg-gray-400 text-white rounded-lg font-bold hover:bg-gray-500 transition duration-300 flex items-center justify-center gap-2 text-sm sm:text-base shadow-md">
                     <i data-lucide="rotate-ccw" class="w-4 sm:w-5 h-4 sm:h-5"></i> Reset
                 </button>
             </div>
         </form>
 
-        <!-- CSV/Excel Import Section -->
-        <div id="csv-section" class="bg-white p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue tab-content hidden">
+        <!-- CSV/Excel Import Tab -->
+        <div id="csv-import-tab" class="bg-white p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue tab-content hidden">
             <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
-                <i data-lucide="file-up" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Import Data Kolektif
+                <i data-lucide="upload" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Import CSV / Excel
             </h3>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                    <h4 class="font-bold text-primary-dark mb-2 flex items-center">
-                        <i data-lucide="info" class="w-4 h-4 mr-2"></i> Langkah 1: Unduh Template
-                    </h4>
-                    <p class="text-sm text-gray-600 mb-4">Gunakan template di bawah ini agar format 13 kriteria sesuai dengan sistem.</p>
-                    <div class="flex flex-col gap-3">
-                        <button id="download-template-csv" type="button" class="w-full bg-white hover:bg-gray-50 text-primary-dark border border-primary-dark py-2.5 px-4 rounded-lg flex items-center justify-center transition shadow-sm">
-                            <i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Template CSV
-                        </button>
-                        <button id="download-template-excel" type="button" class="w-full bg-white hover:bg-gray-50 text-primary-dark border border-primary-dark py-2.5 px-4 rounded-lg flex items-center justify-center transition shadow-sm">
-                            <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-2"></i> Template Excel
-                        </button>
+
+            <div class="space-y-4 sm:space-y-6">
+                <div id="csv-drop-zone" class="border-2 border-dashed border-primary-blue/50 rounded-lg p-6 sm:p-10 text-center bg-primary-light/50 hover:bg-primary-light transition cursor-pointer">
+                    <i data-lucide="cloud-upload" class="w-12 sm:w-16 h-12 sm:h-16 mx-auto mb-3 text-primary-blue opacity-60"></i>
+                    <p class="text-sm sm:text-base font-semibold text-primary-dark mb-1">Seret file atau klik untuk upload</p>
+                    <p class="text-xs sm:text-sm text-gray-600">Format: CSV, XLSX, atau XLS</p>
+                    <input type="file" id="csv-file-input" class="hidden" accept=".csv,.xlsx,.xls" />
+                </div>
+
+                <div id="selected-file-info" class="hidden bg-blue-50 border border-primary-blue rounded-lg p-3 sm:p-4">
+                    <p class="text-xs sm:text-sm text-gray-700">File terpilih: <span id="selected-file-name" class="font-bold text-primary-dark">-</span></p>
+                </div>
+
+                <!-- Preview Tabel -->
+                <div id="csv-preview" class="hidden bg-gray-50 border border-gray-300 rounded-lg p-3 sm:p-4">
+                    <h4 class="text-sm font-bold text-gray-800 mb-2">Preview Data (5 baris pertama):</h4>
+                    <div class="overflow-x-auto">
+                        <table class="text-xs w-full">
+                            <thead id="preview-header" class="bg-gray-200"></thead>
+                            <tbody id="preview-body"></tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div>
-                    <h4 class="font-bold text-primary-dark mb-2 flex items-center">
-                        <i data-lucide="upload" class="w-4 h-4 mr-2"></i> Langkah 2: Upload & Analisis
-                    </h4>
-                    <div id="csv-drop-zone" class="border-2 border-dashed border-primary-blue/30 rounded-xl p-6 text-center hover:bg-blue-50 transition cursor-pointer mb-4">
-                        <input type="file" id="csv-file-input" class="hidden" accept=".csv, .xlsx, .xls" />
-                        <i data-lucide="cloud-upload" class="w-10 h-10 mx-auto text-primary-blue mb-2"></i>
-                        <p class="text-sm text-gray-700 font-medium" id="file-status-text">Klik atau seret file ke sini</p>
-                        
-                        <div id="selected-file-info" class="hidden mt-2 p-2 bg-white rounded border border-green-200 flex items-center justify-center gap-2">
-                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
-                            <span id="selected-file-name" class="text-xs font-bold text-green-700 truncate max-w-[200px]"></span>
+                <!-- Progress Bar -->
+                <div id="csv-progress" class="hidden">
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Status Analisis:</p>
+                    <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                        <div id="csv-progress-bar" class="bg-primary-blue h-full transition-all duration-300 flex items-center justify-center">
+                            <span id="csv-progress-text" class="text-xs font-bold text-white">0%</span>
                         </div>
                     </div>
+                </div>
 
-                    <div class="flex gap-2">
-                        <button id="csv-upload-btn" type="button" disabled class="flex-[2] bg-primary-blue text-white py-3 rounded-lg font-bold hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-                            <i data-lucide="play" class="w-4 h-4 mr-2"></i> Mulai Analisis
-                        </button>
-                        <button id="csv-reset-btn" type="button" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
-                            Reset
-                        </button>
-                    </div>
+                <!-- Buttons -->
+                <div class="flex gap-2 sm:gap-3 flex-wrap">
+                    <button id="csv-upload-btn" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2 sm:py-3 bg-primary-blue text-white rounded-lg font-bold hover:bg-primary-dark transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
+                        <i data-lucide="play" class="w-3 sm:w-4 h-3 sm:h-4"></i> Mulai Analisis Kolektif
+                    </button>
+                    <button id="csv-reset-btn" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2 sm:py-3 bg-gray-400 text-white rounded-lg font-bold hover:bg-gray-500 transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md">
+                        <i data-lucide="rotate-ccw" class="w-3 sm:w-4 h-3 sm:h-4"></i> Reset
+                    </button>
+                    <button id="download-template-csv" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md">
+                        <i data-lucide="download" class="w-3 sm:w-4 h-3 sm:h-4"></i> Template CSV
+                    </button>
+                    <button id="download-template-excel" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md">
+                        <i data-lucide="download" class="w-3 sm:w-4 h-3 sm:h-4"></i> Template Excel
+                    </button>
                 </div>
             </div>
-
-            <!-- CSV Preview Table -->
-            <div id="csv-preview" class="hidden mt-6 pt-6 border-t">
-                <h4 class="font-bold text-primary-dark mb-3">Preview Data (<span id="preview-count">0</span> baris)</h4>
-                <div class="overflow-x-auto rounded-lg border border-gray-200">
-                    <table class="min-w-full">
-                        <thead id="preview-header"></thead>
-                        <tbody id="preview-body"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Progress Bar -->
-            <div id="csv-progress" class="hidden mt-6">
-                <div class="flex justify-between mb-1 text-xs">
-                    <span class="font-medium text-primary-dark italic">Sedang memproses data...</span>
-                    <span id="csv-progress-text" class="font-bold">0%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div id="csv-progress-bar" class="bg-primary-blue h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <!-- Result Message -->
-            <div id="csv-result-message" class="hidden mt-4"></div>
         </div>
 
         <!-- Hasil Analisis -->
-        <div id="result" class="mt-8 bg-white p-6 sm:p-10 rounded-xl sm:rounded-2xl shadow-2xl border-l-8 border-primary-blue" hidden>
-            <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
-                <div>
-                    <h3 class="text-2xl font-extrabold text-primary-dark mb-1">Hasil Klasifikasi</h3>
-                    <p id="result-label" class="text-lg font-bold text-gray-800"></p>
-                </div>
-                <div class="flex gap-2">
-                    <button id="download-result-csv" type="button" class="bg-primary-blue text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary-dark transition flex items-center gap-2">
-                        <i data-lucide="download" class="w-4 h-4"></i> CSV
-                    </button>
-                    <button id="download-results-excel" type="button" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition flex items-center gap-2">
-                        <i data-lucide="download" class="w-4 h-4"></i> Excel (All)
-                    </button>
-                </div>
+        <div id="result" hidden class="mt-6 sm:mt-10 bg-gradient-to-br from-blue-50 to-primary-light p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-xl border-l-4 border-primary-blue">
+            <h3 id="result-label" class="text-xl sm:text-3xl font-bold text-primary-dark mb-3 sm:mb-4">-</h3>
+            <p id="result-explanation" class="text-sm sm:text-base text-gray-700 mb-4 sm:mb-6 leading-relaxed">-</p>
+            
+            <div class="mb-4 sm:mb-6">
+                <h4 class="font-bold text-primary-dark mb-2 sm:mb-3 text-sm sm:text-base">Persentase Prediksi:</h4>
+                <div id="result-probs" class="flex flex-wrap gap-2"></div>
             </div>
 
-            <div class="bg-primary-light/50 p-4 sm:p-6 rounded-xl border border-primary-blue/20 mb-6">
-                <h4 class="font-bold text-primary-dark mb-2 flex items-center">
-                    <i data-lucide="info" class="w-5 h-5 mr-2"></i> Penjelasan
-                </h4>
-                <p id="result-explanation" class="text-gray-700 leading-relaxed"></p>
+            <div>
+                <h4 class="font-bold text-primary-dark mb-2 sm:mb-3 text-sm sm:text-base">Rekomendasi untuk Guru:</h4>
+                <ul id="result-tips" class="list-disc list-inside space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-700"></ul>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h4 class="font-bold text-primary-dark mb-3 flex items-center">
-                        <i data-lucide="lightbulb" class="w-5 h-5 mr-2"></i> Tips Belajar
-                    </h4>
-                    <ul id="result-tips" class="space-y-2 list-disc list-inside text-gray-700 text-sm"></ul>
-                </div>
-                <div>
-                    <h4 class="font-bold text-primary-dark mb-3 flex items-center">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5 mr-2"></i> Probabilitas
-                    </h4>
-                    <div id="result-probs" class="flex flex-wrap gap-2"></div>
-                </div>
+            <div class="mt-4 sm:mt-6 flex gap-2 sm:gap-3 flex-wrap">
+                <button id="download-results-excel" class="px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md">
+                    <i data-lucide="download" class="w-3 sm:w-4 h-3 sm:h-4"></i> Unduh Hasil Excel
+                </button>
+                <button id="download-results-csv" class="px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md">
+                    <i data-lucide="download" class="w-3 sm:w-4 h-3 sm:h-4"></i> Unduh Hasil CSV
+                </button>
             </div>
+        </div>
 
-            <!-- Detailed Results Table for Batch Upload -->
-            <div id="detailed-results-section" class="hidden mt-10 pt-6 border-t">
-                <h4 class="font-bold text-primary-dark mb-4 text-xl">Rincian Hasil Kolektif</h4>
-                <div class="overflow-x-auto rounded-lg border border-gray-200">
-                    <table id="detailed-results-table" class="min-w-full">
-                        <thead>
-                            <tr class="bg-gray-100">
-                                <th class="px-4 py-2 text-left">Nama Siswa</th>
-                                <th class="px-4 py-2 text-left">Kelas</th>
-                                <th class="px-4 py-2 text-left">Tipe Belajar</th>
-                                <th class="px-4 py-2 text-left">Visual</th>
-                                <th class="px-4 py-2 text-left">Auditori</th>
-                                <th class="px-4 py-2 text-left">Kinestetik</th>
-                            </tr>
-                        </thead>
-                        <tbody id="detailed-results-body"></tbody>
-                    </table>
-                </div>
+        <!-- Tabel Hasil Kolektif -->
+        <div id="detailed-results-section" class="hidden mt-6 sm:mt-10">
+            <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-dark">Hasil Analisis Kolektif</h3>
+            <div class="overflow-x-auto bg-white rounded-lg shadow-lg">
+                <table id="detailed-results-table">
+                    <thead>
+                        <tr>
+                            <th>Nama Siswa</th>
+                            <th class="text-center">Kelas</th>
+                            <th>Tipe Belajar</th>
+                            <th class="text-center">Visual %</th>
+                            <th class="text-center">Auditori %</th>
+                            <th class="text-center">Kinestetik %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailed-results-body"></tbody>
+                </table>
             </div>
         </div>
     </main>
 
-    <footer class="bg-primary-dark text-white mt-10">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-5 text-center">
-            <p class="text-sm">
-                © Khoriyah07 — Sistem Klasifikasi Tipe Karakter Belajar Siswa
-            </p>
-        </div>
-    </footer>
-
+    <!-- Hapus duplikasi script manual (baris 896-977), sisakan hanya link ke external script.js -->
     <script src="script.js"></script>
-    <script>
-        const API_BASE = window.API_URL || `${window.location.protocol}//${window.location.hostname}:5004`;
-
-        function checkAuth() {
-            const token = localStorage.getItem("access_token");
-            if (!token) {
-                window.location.href = "login.html";
-                return false;
-            }
-            return token;
-        }
-
-        function loadUserInfo() {
-            const userName = localStorage.getItem("user_name") || "Guru";
-            const teacherNameEl = document.getElementById("teacherName");
-            if (teacherNameEl) {
-                teacherNameEl.textContent = userName;
-            }
-        }
-
-        window.addEventListener("load", () => {
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-            checkAuth();
-            loadUserInfo();
-        });
-
-        const logoutBtn = document.getElementById("logoutBtn");
-        if (logoutBtn) {
-            logoutBtn.addEventListener("click", () => {
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("user_name");
-                window.location.href = "login.html";
-            });
-        }
-
-        document.querySelectorAll('input[type="number"]').forEach(input => {
-            input.addEventListener('input', function() {
-                if (this.value > 100 && this.id.startsWith('nilai_')) this.value = 100;
-                if (this.value > 5 && (this.id.startsWith('daya_') || this.id.startsWith('suka_') || this.id.startsWith('ekskul_'))) this.value = 5;
-                if (this.value < 0) this.value = 0;
-            });
-        });
-
-        const tabManualBtn = document.getElementById("tab-manual");
-        const tabCsvBtn = document.getElementById("tab-csv");
-        const analyzerForm = document.getElementById("analyzer-form");
-        const csvSection = document.getElementById("csv-section");
-
-        if (tabManualBtn && tabCsvBtn) {
-            tabManualBtn.addEventListener('click', () => {
-                tabManualBtn.classList.add('active');
-                tabManualBtn.classList.remove('hidden');
-                tabCsvBtn.classList.remove('active');
-                tabCsvBtn.classList.add('hidden');
-                if (analyzerForm) {
-                    analyzerForm.classList.add('active');
-                    analyzerForm.classList.remove('hidden');
-                }
-                if (csvSection) {
-                    csvSection.classList.remove('active');
-                    csvSection.classList.add('hidden');
-                }
-            });
-
-            tabCsvBtn.addEventListener('click', () => {
-                tabCsvBtn.classList.add('active');
-                tabManualBtn.classList.remove('active');
-                if (csvSection) {
-                    csvSection.classList.add('active');
-                    csvSection.classList.remove('hidden');
-                }
-                if (analyzerForm) {
-                    analyzerForm.classList.remove('active');
-                    analyzerForm.classList.add('hidden');
-                }
-            });
-        }
-
-        // Template download handlers
-        document.getElementById('download-template-csv')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            const template = 'nama_siswa,kelas,nilai_bahasa,nilai_mtk,nilai_ipa,nilai_ips,daya_visual_gambar,mengingat_suara,suka_praktik,suka_membaca_mencatat,ekskul_motorik,ekskul_musik\nContoh Siswa,4A,85,75,80,78,4,3,4,4,3,3\nSiswa Lain,4B,78,82,85,75,3,4,5,3,4,2';
-            const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'template_siswa.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
-
-        document.getElementById('download-template-excel')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            const templateData = [
-                {
-                    nama_siswa: 'Contoh Siswa 1',
-                    kelas: '4A',
-                    nilai_bahasa: 85,
-                    nilai_mtk: 75,
-                    nilai_ipa: 80,
-                    nilai_ips: 78,
-                    daya_visual_gambar: 4,
-                    mengingat_suara: 3,
-                    suka_praktik: 4,
-                    suka_membaca_mencatat: 4,
-                    ekskul_motorik: 3,
-                    ekskul_musik: 3
-                },
-                {
-                    nama_siswa: 'Contoh Siswa 2',
-                    kelas: '4B',
-                    nilai_bahasa: 78,
-                    nilai_mtk: 82,
-                    nilai_ipa: 85,
-                    nilai_ips: 75,
-                    daya_visual_gambar: 3,
-                    mengingat_suara: 4,
-                    suka_praktik: 5,
-                    suka_membaca_mencatat: 3,
-                    ekskul_motorik: 4,
-                    ekskul_musik: 2
-                }
-            ];
-
-            const ws = XLSX.utils.json_to_sheet(templateData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
-            ws['!cols'] = [{wch: 20}, {wch: 8}, {wch: 12}, {wch: 10}, {wch: 10}, {wch: 10}, {wch: 18}, {wch: 15}, {wch: 12}, {wch: 20}, {wch: 14}, {wch: 12}];
-            XLSX.writeFile(wb, 'template_siswa.xlsx');
-        });
-
-        async function downloadFiltered(format) {
-            const token = localStorage.getItem("access_token");
-            if (!token) {
-                alert("Token tidak ditemukan. Silakan login kembali.");
-                window.location.href = "login.html";
-                return;
-            }
-
-            const filterData = {format: format};
-
-            try {
-                const resp = await fetch(`${API_BASE}/api/download-all`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify(filterData)
-                });
-
-                if (resp.status === 401 || resp.status === 403) {
-                    alert("Token sudah tidak valid. Silakan login kembali.");
-                    localStorage.removeItem("access_token");
-                    localStorage.removeItem("user_name");
-                    window.location.href = "login.html";
-                    return;
-                }
-
-                if (!resp.ok) {
-                    const errData = await resp.json().catch(() => ({}));
-                    throw new Error(errData.detail || errData.message || resp.statusText);
-                }
-
-                const blob = await resp.blob();
-                if (blob.size === 0) {
-                    alert("File kosong. Tidak ada data yang dapat diunduh.");
-                    return;
-                }
-
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = format === 'excel' ? 'hasil_klasifikasi_semua.xlsx' : 'hasil_klasifikasi_semua.csv';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-            } catch (e) {
-                console.error("Download error:", e);
-                alert(`Gagal mengunduh file: ${e.message}`);
-            }
-        }
-
-        document.getElementById("download-results-excel")?.addEventListener("click", () => downloadFiltered('excel'));
-        document.getElementById("download-result-csv")?.addEventListener("click", () => downloadFiltered('csv'));
-    </script>
 </body>
 </html>

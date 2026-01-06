@@ -246,23 +246,19 @@ document.addEventListener("DOMContentLoaded", () => {
           return
         }
 
-        const headers = (jsonData[0] || [])
-          .map((h) => String(h).trim().toLowerCase().replace(/\s+/g, "_"))
-          .filter((h) => h.length > 0)
+        const rawHeaders = jsonData[0] || []
+        const headerMap = normalizeHeaderMap(rawHeaders)
 
         const rows = []
         for (let i = 1; i < jsonData.length; i++) {
           const row = jsonData[i]
           if (!row || row.length === 0) continue
 
-          const obj = {}
-          headers.forEach((h, idx) => {
-            obj[h] = row[idx] !== undefined && row[idx] !== null ? String(row[idx]).trim() : ""
-          })
+          const mappedRow = mapRowData(row, headerMap)
 
           // Only add non-empty rows
-          if (Object.values(obj).some((v) => v !== "")) {
-            rows.push(obj)
+          if (Object.values(mappedRow).some((v) => v !== "")) {
+            rows.push(mappedRow)
           }
         }
 
@@ -329,7 +325,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- 6. PROSES ANALISIS KOLEKTIF (DB CONNECTED) ---
+  // --- 6. TAB SWITCHING ---
+  const tabBtns = document.querySelectorAll(".tab-btn")
+  const tabContents = document.querySelectorAll(".tab-content")
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault()
+
+      // Remove active class from all buttons and contents
+      tabBtns.forEach((b) => b.classList.remove("active"))
+      tabContents.forEach((c) => c.classList.add("hidden"))
+
+      // Add active class to clicked button
+      btn.classList.add("active")
+
+      // Show corresponding tab content
+      if (btn.id === "tab-manual") {
+        document.getElementById("analyzer-form").classList.remove("hidden")
+        document.getElementById("analyzer-form").classList.add("active")
+        document.getElementById("csv-import-tab").classList.add("hidden")
+      } else if (btn.id === "tab-csv") {
+        document.getElementById("analyzer-form").classList.add("hidden")
+        document.getElementById("csv-import-tab").classList.remove("hidden")
+        document.getElementById("csv-import-tab").classList.add("active")
+      }
+    })
+  })
+
+  // --- 7. PROSES ANALISIS KOLEKTIF (DB CONNECTED) ---
   if (csvUploadBtn) {
     csvUploadBtn.addEventListener("click", async () => {
       if (parsedCsvData.length === 0) {
@@ -404,7 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderBatchResults(detailedResults)
       csvUploadBtn.disabled = false
-      csvUploadBtn.textContent = "Analisis Selesai"
+      csvUploadBtn.textContent = "Mulai Analisis Kolektif"
       alert(`Analisis Kolektif Selesai!\nBerhasil: ${successCount}\nGagal: ${errorCount}\nData tersimpan ke Database.`)
     })
   }
@@ -448,19 +472,33 @@ document.addEventListener("DOMContentLoaded", () => {
     resultEl?.scrollIntoView({ behavior: "smooth" })
   }
 
-  // --- 7. ANALISIS MANUAL (DB CONNECTED) ---
+  // --- 8. ANALISIS MANUAL (DB CONNECTED) ---
   if (analyzeBtn) {
     analyzeBtn.addEventListener("click", async (e) => {
       e.preventDefault()
+
+      const nama = document.getElementById("nama_siswa").value.trim()
+      const kelas = document.getElementById("kelas").value.trim()
+
+      if (!nama || !kelas) {
+        alert("Nama siswa dan kelas harus diisi!")
+        return
+      }
 
       const nb = Number(document.getElementById("nilai_bahasa").value)
       const nm = Number(document.getElementById("nilai_mtk").value)
       const ni = Number(document.getElementById("nilai_ipa").value)
       const ns = Number(document.getElementById("nilai_ips").value)
 
+      // Check if all values are filled and valid
+      if (isNaN(nb) || isNaN(nm) || isNaN(ni) || isNaN(ns)) {
+        alert("Semua nilai akademik harus diisi dengan angka!")
+        return
+      }
+
       const payload = {
-        nama_siswa: document.getElementById("nama_siswa").value,
-        kelas: document.getElementById("kelas").value,
+        nama_siswa: nama,
+        kelas: kelas,
         nilai_bahasa: nb,
         nilai_mtk: nm,
         nilai_ipa: ni,
@@ -506,7 +544,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       analyzeBtn.disabled = false
-      analyzeBtn.textContent = "Mulai Analisis Karakter"
+      analyzeBtn.textContent = "Analisis Tipe Karakter"
     })
   }
 
@@ -535,7 +573,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resultEl?.scrollIntoView({ behavior: "smooth" })
   }
 
-  // --- 8. UNDUH SEMUA DATA DARI DATABASE (HISTORY GURU) ---
+  // --- 9. UNDUH SEMUA DATA DARI DATABASE (HISTORY GURU) ---
   document.getElementById("download-results-excel")?.addEventListener("click", async (e) => {
     e.preventDefault()
 
@@ -570,59 +608,73 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Error: " + error.message)
       }
     } else {
-      // Download hasil lokal dari tabel
-      const exportData = detailedResults.map((r) => ({
-        "Nama Siswa": r.nama_siswa,
-        Kelas: r.kelas,
-        Hasil: r.label || r.prediction,
-        "Visual (%)":
-          r.probabilities && r.probabilities.Visual ? ((r.probabilities.Visual || 0) * 100).toFixed(1) : "0",
-        "Auditori (%)":
-          r.probabilities && r.probabilities.Auditori ? ((r.probabilities.Auditori || 0) * 100).toFixed(1) : "0",
-        "Kinestetik (%)":
-          r.probabilities && r.probabilities.Kinestetik ? ((r.probabilities.Kinestetik || 0) * 100).toFixed(1) : "0",
-      }))
-
-      const ws = XLSX.utils.json_to_sheet(exportData)
+      // Download dari state lokal
+      const ws = XLSX.utils.json_to_sheet(detailedResults)
       const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, "Hasil Analisis")
-      XLSX.writeFile(wb, "Hasil_Klasifikasi_Kolektif.xlsx")
-      console.log("[v0] Local file download successful")
+      XLSX.writeFile(wb, "Hasil_Analisis_Siswa.xlsx")
     }
   })
 
-  // --- 9. TAB SWITCHING & LOGOUT ---
-  const btnManual = document.getElementById("tab-manual")
-  const btnCsv = document.getElementById("tab-csv")
-  const sectionManual = document.getElementById("analyzer-form")
-  const sectionCsv = document.getElementById("csv-section")
-
-  if (btnManual && btnCsv) {
-    btnManual.addEventListener("click", () => {
-      if (sectionManual) sectionManual.classList.remove("hidden")
-      if (sectionCsv) sectionCsv.classList.add("hidden")
-      btnManual.className = "tab-btn active bg-primary-blue text-white px-4 py-2 rounded shadow-md cursor-pointer"
-      if (btnCsv)
-        btnCsv.className = "tab-btn px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition cursor-pointer"
-    })
-
-    btnCsv.addEventListener("click", () => {
-      if (sectionManual) sectionManual.classList.add("hidden")
-      if (sectionCsv) sectionCsv.classList.remove("hidden")
-      btnCsv.className = "tab-btn active bg-primary-blue text-white px-4 py-2 rounded shadow-md cursor-pointer"
-      if (btnManual)
-        btnManual.className = "tab-btn px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition cursor-pointer"
-    })
-  }
-
-  if (csvResetBtn) {
-    csvResetBtn.addEventListener("click", () => {
-      location.reload()
-    })
-  }
-
+  // --- 10. LOGOUT ---
   document.getElementById("logoutBtn")?.addEventListener("click", () => {
     localStorage.clear()
-    window.location.href = "login.html"
+    window.location.replace("login.html")
   })
+
+  function normalizeHeaderMap(rawHeaders) {
+    const headerMapping = {
+      // Nama siswa
+      nama_siswa: ["nama_siswa", "nama siswa", "namaswa", "nama"],
+      // Kelas
+      kelas: ["kelas", "class"],
+      // Nilai akademik
+      nilai_bahasa: ["nilai_bahasa", "nilai bahasa", "nilai_bahasa_indonesia", "nilai bahasa indonesia", "b_ind"],
+      nilai_mtk: ["nilai_mtk", "nilai mtk", "nilai_matematika", "nilai matematika", "mtk"],
+      nilai_ipa: ["nilai_ipa", "nilai ipa"],
+      nilai_ips: ["nilai_ips", "nilai ips"],
+      // Non-akademik
+      daya_visual_gambar: ["daya_visual_gambar", "daya visual gambar", "visual_gambar", "visual gambar", "daya_visual"],
+      mengingat_suara: ["mengingat_suara", "mengingat suara", "auditori"],
+      suka_praktik: ["suka_praktik", "suka praktik", "kinestetik"],
+      suka_membaca_mencatat: ["suka_membaca_mencatat", "suka membaca mencatat", "suka_membaca", "membaca"],
+      ekskul_motorik: ["ekskul_motorik", "ekskul motorik", "motorik", "olahraga"],
+      ekskul_musik: ["ekskul_musik", "ekskul musik", "musik", "seni"],
+      konsentrasi_belajar: ["konsentrasi_belajar", "konsentrasi belajar", "konsentrasi"],
+    }
+
+    const normalizedMap = {}
+    rawHeaders.forEach((rawHeader) => {
+      const normalized = String(rawHeader)
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/[^\w_]/g, "")
+
+      // Cari kecocokan di mapping
+      let matched = false
+      for (const [standardKey, variants] of Object.entries(headerMapping)) {
+        if (variants.some((v) => normalized.includes(v) || v.includes(normalized))) {
+          normalizedMap[standardKey] = rawHeaders.indexOf(rawHeader)
+          matched = true
+          break
+        }
+      }
+
+      // Jika tidak cocok, gunakan header langsung
+      if (!matched) {
+        normalizedMap[normalized] = rawHeaders.indexOf(rawHeader)
+      }
+    })
+
+    return normalizedMap
+  }
+
+  function mapRowData(row, headerMap) {
+    const mappedRow = {}
+    Object.entries(headerMap).forEach(([key, index]) => {
+      mappedRow[key] = row[index] !== undefined && row[index] !== null ? String(row[index]).trim() : ""
+    })
+    return mappedRow
+  }
 })
