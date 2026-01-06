@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   const XLSX = window.XLSX
   const TOKEN = localStorage.getItem("access_token")
+   // AKTIFKAN ICON LUCIDE
+  lucide.createIcons()
 
   // --- 1. PROTEKSI HALAMAN & TOKEN CHECK ---
   if (!TOKEN) {
@@ -615,6 +617,67 @@ document.addEventListener("DOMContentLoaded", () => {
       XLSX.writeFile(wb, "Hasil_Analisis_Siswa.xlsx")
     }
   })
+
+  // --- 9B. UNDUH SEMUA DATA DALAM FORMAT CSV ---
+document.getElementById("download-results-csv")?.addEventListener("click", async (e) => {
+  e.preventDefault()
+
+  // JIKA BELUM ADA DATA DI STATE, TARIK DARI DATABASE
+  if (detailedResults.length === 0) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/download-all?format=csv`, {
+        method: "GET",
+        headers: {
+          Authorization: TOKEN,
+        },
+      })
+
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = "Seluruh_Data_Siswa_Saya.csv"
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        window.URL.revokeObjectURL(url)
+        console.log("[v0] CSV database download successful")
+      } else {
+        const errorText = await response.text()
+        console.error("[v0] CSV download error:", response.status, errorText)
+        alert("Gagal menarik data CSV dari database.")
+      }
+    } catch (error) {
+      console.error("[v0] CSV download database error:", error)
+      alert("Error: " + error.message)
+    }
+  } else {
+    // DOWNLOAD DARI DATA LOKAL
+    const headers = Object.keys(detailedResults[0])
+
+    const csvRows = [
+      headers.join(","), // header
+      ...detailedResults.map((row) =>
+        headers.map((h) => `"${String(row[h] ?? "").replace(/"/g, '""')}"`).join(","),
+      ),
+    ]
+
+    const blob = new Blob([csvRows.join("\n")], {
+      type: "text/csv;charset=utf-8;",
+    })
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "Hasil_Analisis_Siswa.csv"
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+})
+
 
   // --- 10. LOGOUT ---
   document.getElementById("logoutBtn")?.addEventListener("click", () => {
