@@ -266,9 +266,9 @@ button:hover i[data-lucide="download"] {
             <img src="assets/logo.png" alt="Logo" class="h-9 sm:h-12 w-auto flex-shrink-0" />
             <div class="flex flex-col min-w-0">
                 <h1 class="text-[10px] sm:text-base font-bold text-primary-dark truncate uppercase leading-none">
-                    Klasifikasi Karakter
+                   Sistem Klasifikasi Karakter
                 </h1>
-                <p class="text-[8px] sm:text-xs text-gray-400 font-medium mt-1">SD Insan Kamil</p>
+                <p class="text-[8px] sm:text-xs text-gray-400 font-medium mt-1">SD Insan Kamil | SVM | Machine Learning</p>
             </div>
         </div>
 
@@ -583,5 +583,30 @@ button:hover i[data-lucide="download"] {
 
     <!-- Hapus duplikasi script manual (baris 896-977), sisakan hanya link ke external script.js -->
     <script src="script.js"></script>
+
+    <!-- FOOTER -->
+<footer class="bg-primary-blue text-white mt-12">
+  <div class="max-w-7xl mx-auto px-4 py-4">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+
+      <!-- KIRI -->
+      <div class="text-xs sm:text-sm font-medium opacity-90">
+        © <span id="year"></span> Khoriyah07
+      </div>
+
+      <!-- KANAN -->
+      <div class="text-[10px] sm:text-xs opacity-80">
+        Sistem Klasifikasi Tipe Karakter Siswa
+      </div>
+
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear()
+</script>
+
+
 </body>
 </html>
