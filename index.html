@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sistem Klasifikasi Tipe Karakter Belajar - SD Insan Kamil</title>
+    <title>Sistem Klasifikasi Tipe Karakter Belajar - SD Insan Kamil | SVM |Machine Learning</title>
     
     <script>
       window.API_URL = window.location.hostname === 'localhost'
@@ -38,8 +38,18 @@
     <style>
         .main-content {
   position: relative;
-  z-index: 2;
+  z-index: 20;
 }
+
+.background-icons,
+.floating-icons,
+.bg-animated {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none; /* 🔥 INI KUNCINYA */
+}
+
 
         .animated-bg {
             position: fixed;
