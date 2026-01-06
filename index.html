@@ -14,7 +14,6 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Tambahkan library SheetJS untuk membaca Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
     
@@ -45,7 +44,7 @@
             height: 100%;
             overflow: hidden;
             z-index: -10;
-            background-color: #E3F2FD; 
+            background-color: #E3F2FD;
         }
 
         .floating-icon {
@@ -78,7 +77,6 @@
             100% { transform: translateY(-10vh) scale(1.2) rotate(360deg); opacity: 0; }
         }
 
-        /* Improved responsive form grid with better mobile layout */
         .form-grid {
             display: grid;
             gap: 1.5rem;
@@ -95,14 +93,13 @@
             }
         }
 
-        /* CSV Import Styles */
         .tab-btn.active {
-            background-color: #4FC3F7; /* primary-blue */
+            background-color: #4FC3F7;
             color: white;
         }
         .tab-btn:not(.active) {
-            background-color: #e5e7eb; /* gray-200 */
-            color: #374151; /* gray-700 */
+            background-color: #e5e7eb;
+            color: #374151;
         }
         .tab-content {
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
@@ -122,14 +119,34 @@
         .pill {
             display: inline-block;
             padding: 0.3rem 0.7rem;
-            background-color: #E3F2FD; /* primary-light */
-            color: #0288D1; /* primary-dark */
-            border-radius: 9999px; /* rounded-full */
-            font-size: 0.875rem; /* text-sm */
+            background-color: #E3F2FD;
+            color: #0288D1;
+            border-radius: 9999px;
+            font-size: 0.875rem;
             font-weight: 600;
         }
 
-        /* Mobile optimization for floating icons */
+        #detailed-results-section {
+            margin-top: 2rem;
+        }
+        #detailed-results-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        #detailed-results-table th,
+        #detailed-results-table td {
+            border: 1px solid #d1d5db;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+        #detailed-results-table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
         @media (max-width: 768px) {
             .floating-icon {
                 font-size: 1rem;
@@ -150,74 +167,37 @@
             .floating-icon:nth-child(13) { font-size: 0.8rem; }
             .floating-icon:nth-child(14) { font-size: 1.7rem; }
             .floating-icon:nth-child(15) { font-size: 1.45rem; }
-        }
-
-        /* Styles for the detailed results table */
-        #detailed-results-section {
-            margin-top: 2rem; /* Adjust as needed */
-        }
-        #detailed-results-table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 1rem;
-        }
-        #detailed-results-table th,
-        #detailed-results-table td {
-            border: 1px solid #d1d5db; /* gray-300 */
-            padding: 0.5rem 0.75rem;
-            text-align: left;
-            font-size: 0.875rem; /* text-sm */
-        }
-        #detailed-results-table th {
-            background-color: #f3f4f6; /* gray-100 */
-            font-weight: 600;
-            color: #1f2937; /* text-gray-900 */
-        }
-        #detailed-results-table td.highlight {
-            font-weight: 600;
-            color: #0288d1; /* primary-dark */
-        }
-        #detailed-results-table td.percentage {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Responsive adjustments for the table */
-        @media (max-width: 768px) {
             #detailed-results-table th,
             #detailed-results-table td {
                 padding: 0.4rem 0.5rem;
-                font-size: 0.75rem; /* text-xs */
+                font-size: 0.75rem;
             }
         }
     </style>
 </head>
 
 <body class="bg-gray-50 font-sans text-text-dark">
-    <!-- Animasi Background -->
     <div class="animated-bg">
-        <div class="floating-icon">💡</div>
-        <div class="floating-icon">🎧</div>
-        <div class="floating-icon">🏃</div>
-        <div class="floating-icon">📚</div>
-        <div class="floating-icon">🎶</div>
-        <div class="floating-icon">🧠</div>
-        <div class="floating-icon">✏️</div>
-        <div class="floating-icon">📣</div>
-        <div class="floating-icon">🎨</div>
-        <div class="floating-icon">⚽</div>
-        <div class="floating-icon">🔬</div>
-        <div class="floating-icon">💬</div>
-        <div class="floating-icon">🤸</div>
-        <div class="floating-icon">📐</div>
-        <div class="floating-icon">📝</div>
+        <i class="floating-icon" data-lucide="book"></i>
+        <i class="floating-icon" data-lucide="brain"></i>
+        <i class="floating-icon" data-lucide="lightbulb"></i>
+        <i class="floating-icon" data-lucide="target"></i>
+        <i class="floating-icon" data-lucide="zap"></i>
+        <i class="floating-icon" data-lucide="star"></i>
+        <i class="floating-icon" data-lucide="pen-tool"></i>
+        <i class="floating-icon" data-lucide="layers"></i>
+        <i class="floating-icon" data-lucide="activity"></i>
+        <i class="floating-icon" data-lucide="trello"></i>
+        <i class="floating-icon" data-lucide="eye"></i>
+        <i class="floating-icon" data-lucide="music"></i>
+        <i class="floating-icon" data-lucide="rss"></i>
+        <i class="floating-icon" data-lucide="user-check"></i>
+        <i class="floating-icon" data-lucide="award"></i>
     </div>
 
-    <!-- Improved responsive header with better mobile layout -->
     <header class="bg-white shadow-lg sticky top-0 z-50">
         <div class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 flex flex-row items-center justify-between gap-3 md:gap-4">
             <div class="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                <div class="flex items-center space-x-2 flex-shrink-0">
-                    <img src="assets/logo.png" alt="Logo INKA" class="w-8 sm:w-10 h-8 sm:h-10 object-contain">
-                </div>
                 <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                     <div class="flex flex-col min-w-0 flex-1">
                         <h1 class="text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-primary-dark truncate">
@@ -225,21 +205,18 @@
                         </h1>
                         <p class="text-xs text-gray-500">SD Insan Kamil | ML (SVM)</p>
                     </div>
-                    <!-- Pindahkan user greeting ke samping judul -->
                     <p class="text-xs sm:text-sm text-gray-700 flex-shrink-0 whitespace-nowrap">
                         Selamat Datang, <span id="teacherName" class="font-bold text-primary-dark">-</span>
                     </p>
                 </div>
             </div>
 
-            <!-- Logout button tetap di kanan, tidak membungkus lagi -->
             <button id="logoutBtn" class="flex items-center justify-center gap-1 sm:gap-2 bg-primary-blue text-white hover:bg-primary-dark transition duration-300 px-2 sm:px-3 md:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold shadow-md flex-shrink-0 leading-none">
                 <i data-lucide='log-out' class='w-3 sm:w-4 h-3 sm:h-4'></i><span class="hidden sm:inline">Logout</span>
             </button>
         </div>
     </header>
 
-    <!-- Hero section with improved mobile responsive image and text sizing -->
     <section class="py-6 sm:py-8 lg:py-10">
         <div class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
             <div class="flex flex-col lg:flex-row items-center bg-white/90 backdrop-blur-sm p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue gap-4 sm:gap-6 lg:gap-10">
@@ -258,7 +235,7 @@
                 <div class="lg:w-1/2 w-full">
                     <div class="relative rounded-lg sm:rounded-xl overflow-hidden shadow-lg transition duration-500 hover:scale-[1.02] transform">
                         <img 
-                            src="assets/inka.png" 
+                            src="/placeholder.svg?height=320&width=400" 
                             alt="Banner Klasifikasi Siswa" 
                             class="w-full h-48 sm:h-64 lg:h-80 object-cover"
                         />
@@ -269,14 +246,11 @@
         </div>
     </section>
 
-    <!-- Main content with improved responsive padding and tab buttons -->
     <main class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mb-12 sm:mb-16">
-        <!-- Tab buttons with improved mobile responsive layout -->
         <div class="flex gap-2 sm:gap-3 mb-4 sm:mb-6 flex-wrap">
             <button id="tab-manual" class="tab-btn active flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-primary-blue text-white rounded-lg font-semibold hover:bg-primary-dark transition text-xs sm:text-sm">
                 <i data-lucide="edit-3" class="w-4 sm:w-5 h-4 sm:h-5"></i> <span class="hidden sm:inline">Input</span> Manual
             </button>
-            <!-- Ubah label tab dari "Import CSV" ke "Import File" -->
             <button id="tab-csv" class="tab-btn flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition text-xs sm:text-sm">
                 <i data-lucide="upload" class="w-4 sm:w-5 h-4 sm:h-5"></i> <span class="hidden sm:inline">Import</span> CSV/Excel
             </button>
@@ -401,7 +375,6 @@
                 </label>
             </div>
 
-            <!-- Action buttons with improved mobile responsive layout -->
             <div class="actions mt-6 sm:mt-10 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:space-y-0">
                 <button type="button" id="analyzeBtn" class="bg-primary-blue text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:bg-primary-dark transition duration-300 transform hover:scale-[1.02] flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
                     <i data-lucide="zap" class="w-4 sm:w-5 h-4 sm:h-5"></i> Analisis Tipe Karakter
@@ -413,67 +386,80 @@
         </form>
 
         <!-- CSV/Excel Import Section -->
-        <!-- Renamed ID to match the tab button and improved structure -->
         <div id="csv-section" class="bg-white p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue tab-content hidden">
-    <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
-        <i data-lucide="file-up" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Import Data Kolektif
-    </h3>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
-            <h4 class="font-bold text-primary-dark mb-2 flex items-center">
-                <i data-lucide="info" class="w-4 h-4 mr-2"></i> Langkah 1: Unduh Template
-            </h4>
-            <p class="text-sm text-gray-600 mb-4">Gunakan template di bawah ini agar format 13 kriteria sesuai dengan sistem.</p>
-            <div class="flex flex-col gap-3">
-                <button id="download-template-csv" class="w-full bg-white hover:bg-gray-50 text-primary-dark border border-primary-dark py-2.5 px-4 rounded-lg flex items-center justify-center transition shadow-sm">
-                    <i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Template CSV
-                </button>
-                <button id="download-template-excel" class="w-full bg-white hover:bg-gray-50 text-primary-dark border border-primary-dark py-2.5 px-4 rounded-lg flex items-center justify-center transition shadow-sm">
-                    <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-2"></i> Template Excel
-                </button>
-            </div>
-        </div>
+            <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
+                <i data-lucide="file-up" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Import Data Kolektif
+            </h3>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                    <h4 class="font-bold text-primary-dark mb-2 flex items-center">
+                        <i data-lucide="info" class="w-4 h-4 mr-2"></i> Langkah 1: Unduh Template
+                    </h4>
+                    <p class="text-sm text-gray-600 mb-4">Gunakan template di bawah ini agar format 13 kriteria sesuai dengan sistem.</p>
+                    <div class="flex flex-col gap-3">
+                        <button id="download-template-csv" type="button" class="w-full bg-white hover:bg-gray-50 text-primary-dark border border-primary-dark py-2.5 px-4 rounded-lg flex items-center justify-center transition shadow-sm">
+                            <i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Template CSV
+                        </button>
+                        <button id="download-template-excel" type="button" class="w-full bg-white hover:bg-gray-50 text-primary-dark border border-primary-dark py-2.5 px-4 rounded-lg flex items-center justify-center transition shadow-sm">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-2"></i> Template Excel
+                        </button>
+                    </div>
+                </div>
 
-        <div>
-            <h4 class="font-bold text-primary-dark mb-2 flex items-center">
-                <i data-lucide="upload" class="w-4 h-4 mr-2"></i> Langkah 2: Upload & Analisis
-            </h4>
-            <div id="csv-drop-zone" class="border-2 border-dashed border-primary-blue/30 rounded-xl p-6 text-center hover:bg-blue-50 transition cursor-pointer mb-4">
-                <input type="file" id="csv-file-input" class="hidden" accept=".csv, .xlsx, .xls" />
-                <i data-lucide="cloud-upload" class="w-10 h-10 mx-auto text-primary-blue mb-2"></i>
-                <p class="text-sm text-gray-700 font-medium" id="file-status-text">Klik atau seret file ke sini</p>
-                
-                <div id="selected-file-info" class="hidden mt-2 p-2 bg-white rounded border border-green-200 flex items-center justify-center gap-2">
-                    <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
-                    <span id="selected-file-name" class="text-xs font-bold text-green-700 truncate max-w-[200px]"></span>
+                <div>
+                    <h4 class="font-bold text-primary-dark mb-2 flex items-center">
+                        <i data-lucide="upload" class="w-4 h-4 mr-2"></i> Langkah 2: Upload & Analisis
+                    </h4>
+                    <div id="csv-drop-zone" class="border-2 border-dashed border-primary-blue/30 rounded-xl p-6 text-center hover:bg-blue-50 transition cursor-pointer mb-4">
+                        <input type="file" id="csv-file-input" class="hidden" accept=".csv, .xlsx, .xls" />
+                        <i data-lucide="cloud-upload" class="w-10 h-10 mx-auto text-primary-blue mb-2"></i>
+                        <p class="text-sm text-gray-700 font-medium" id="file-status-text">Klik atau seret file ke sini</p>
+                        
+                        <div id="selected-file-info" class="hidden mt-2 p-2 bg-white rounded border border-green-200 flex items-center justify-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
+                            <span id="selected-file-name" class="text-xs font-bold text-green-700 truncate max-w-[200px]"></span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button id="csv-upload-btn" type="button" disabled class="flex-[2] bg-primary-blue text-white py-3 rounded-lg font-bold hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                            <i data-lucide="play" class="w-4 h-4 mr-2"></i> Mulai Analisis
+                        </button>
+                        <button id="csv-reset-btn" type="button" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                            Reset
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex gap-2">
-                <button id="csv-upload-btn" disabled class="flex-[2] bg-primary-blue text-white py-3 rounded-lg font-bold hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-                    <i data-lucide="play" class="w-4 h-4 mr-2"></i> Mulai Analisis
-                </button>
-                <button id="csv-reset-btn" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
-                    Reset
-                </button>
+            <!-- CSV Preview Table -->
+            <div id="csv-preview" class="hidden mt-6 pt-6 border-t">
+                <h4 class="font-bold text-primary-dark mb-3">Preview Data (<span id="preview-count">0</span> baris)</h4>
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="min-w-full">
+                        <thead id="preview-header"></thead>
+                        <tbody id="preview-body"></tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div id="csv-progress" class="hidden mt-6">
-        <div class="flex justify-between mb-1 text-xs">
-            <span class="font-medium text-primary-dark italic">Sedang memproses data...</span>
-            <span id="csv-progress-text" class="font-bold">0%</span>
+            <!-- Progress Bar -->
+            <div id="csv-progress" class="hidden mt-6">
+                <div class="flex justify-between mb-1 text-xs">
+                    <span class="font-medium text-primary-dark italic">Sedang memproses data...</span>
+                    <span id="csv-progress-text" class="font-bold">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="csv-progress-bar" class="bg-primary-blue h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Result Message -->
+            <div id="csv-result-message" class="hidden mt-4"></div>
         </div>
-        <div class="w-full bg-gray-200 rounded-full h-2">
-            <div id="csv-progress-bar" class="bg-primary-blue h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-        </div>
-    </div>
-</div>
 
         <!-- Hasil Analisis -->
-        <!-- Updated structure for better consistency with new CSV section -->
         <div id="result" class="mt-8 bg-white p-6 sm:p-10 rounded-xl sm:rounded-2xl shadow-2xl border-l-8 border-primary-blue" hidden>
             <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
                 <div>
@@ -481,12 +467,10 @@
                     <p id="result-label" class="text-lg font-bold text-gray-800"></p>
                 </div>
                 <div class="flex gap-2">
-                    <!-- Simplified download buttons for individual result -->
-                    <button id="download-result-csv" class="bg-primary-blue text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary-dark transition flex items-center gap-2">
+                    <button id="download-result-csv" type="button" class="bg-primary-blue text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary-dark transition flex items-center gap-2">
                         <i data-lucide="download" class="w-4 h-4"></i> CSV
                     </button>
-                    <!-- Download all results buttons -->
-                    <button id="download-results-excel" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition flex items-center gap-2">
+                    <button id="download-results-excel" type="button" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition flex items-center gap-2">
                         <i data-lucide="download" class="w-4 h-4"></i> Excel (All)
                     </button>
                 </div>
@@ -515,19 +499,18 @@
             </div>
 
             <!-- Detailed Results Table for Batch Upload -->
-            <!-- Renamed ID to be more descriptive and updated structure -->
             <div id="detailed-results-section" class="hidden mt-10 pt-6 border-t">
                 <h4 class="font-bold text-primary-dark mb-4 text-xl">Rincian Hasil Kolektif</h4>
                 <div class="overflow-x-auto rounded-lg border border-gray-200">
                     <table id="detailed-results-table" class="min-w-full">
                         <thead>
                             <tr class="bg-gray-100">
-                                <th>Nama Siswa</th>
-                                <th>Kelas</th>
-                                <th>Tipe Belajar</th>
-                                <th>Visual</th>
-                                <th>Auditori</th>
-                                <th>Kinestetik</th>
+                                <th class="px-4 py-2 text-left">Nama Siswa</th>
+                                <th class="px-4 py-2 text-left">Kelas</th>
+                                <th class="px-4 py-2 text-left">Tipe Belajar</th>
+                                <th class="px-4 py-2 text-left">Visual</th>
+                                <th class="px-4 py-2 text-left">Auditori</th>
+                                <th class="px-4 py-2 text-left">Kinestetik</th>
                             </tr>
                         </thead>
                         <tbody id="detailed-results-body"></tbody>
@@ -549,7 +532,6 @@
     <script>
         const API_BASE = window.API_URL || `${window.location.protocol}//${window.location.hostname}:5004`;
 
-        // Function to check authentication token
         function checkAuth() {
             const token = localStorage.getItem("access_token");
             if (!token) {
@@ -559,764 +541,76 @@
             return token;
         }
 
-        // Function to load user information
         function loadUserInfo() {
             const userName = localStorage.getItem("user_name") || "Guru";
-            document.getElementById("teacherName").textContent = userName;
+            const teacherNameEl = document.getElementById("teacherName");
+            if (teacherNameEl) {
+                teacherNameEl.textContent = userName;
+            }
         }
 
-        // Event listener for logout button
-        document.getElementById("logoutBtn").addEventListener("click", () => {
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("user_name");
-            window.location.href = "login.html";
-        });
-
-        // Initialize simple layout-only triggers or critical setup that isn't in script.js
         window.addEventListener("load", () => {
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
+            checkAuth();
+            loadUserInfo();
         });
 
-        // Simple helper for numeric field limits if not handled by script.js
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", () => {
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("user_name");
+                window.location.href = "login.html";
+            });
+        }
+
         document.querySelectorAll('input[type="number"]').forEach(input => {
             input.addEventListener('input', function() {
                 if (this.value > 100 && this.id.startsWith('nilai_')) this.value = 100;
                 if (this.value > 5 && (this.id.startsWith('daya_') || this.id.startsWith('suka_') || this.id.startsWith('ekskul_'))) this.value = 5;
-                if (this.value < 0 && this.id.startsWith('nilai_')) this.value = 0; // Handle minimums as well
-                if (this.value < 1 && (this.id.startsWith('daya_') || this.id.startsWith('suka_') || this.id.startsWith('ekskul_'))) this.value = 1;
+                if (this.value < 0) this.value = 0;
             });
         });
 
-        // ===== NUMERIC FIELDS =====
-        const fields = [
-            "nilai_bahasa", "nilai_mtk", "nilai_ipa", "nilai_ips",
-            "rata_rata_umum", "indeks_eksakta", "indeks_non_eksakta",
-            "daya_visual_gambar", "mengingat_suara", "suka_praktik",
-            "suka_membaca_mencatat", "ekskul_motorik", "ekskul_musik",
-        ];
+        const tabManualBtn = document.getElementById("tab-manual");
+        const tabCsvBtn = document.getElementById("tab-csv");
+        const analyzerForm = document.getElementById("analyzer-form");
+        const csvSection = document.getElementById("csv-section");
 
-        // ===== AUTO CALCULATE AVERAGE & INDEX =====
-        ["nilai_bahasa", "nilai_mtk", "nilai_ipa", "nilai_ips"].forEach((id) => {
-            document.getElementById(id).addEventListener("input", updateCalculatedFields);
-        });
-
-        function updateCalculatedFields() {
-            const b = +document.getElementById("nilai_bahasa").value || 0;
-            const m = +document.getElementById("nilai_mtk").value || 0;
-            const i = +document.getElementById("nilai_ipa").value || 0;
-            const s = +document.getElementById("nilai_ips").value || 0;
-
-            const avg = (b + m + i + s) / 4;
-            document.getElementById("rata_rata_umum").value = Math.round(avg);
-
-            const eksakta = (m + i) / 2;
-            document.getElementById("indeks_eksakta").value = Math.round(eksakta);
-
-            const nonEksakta = (b + s) / 2;
-            document.getElementById("indeks_non_eksakta").value = Math.round(nonEksakta);
-        }
-
-        // ===== CREATE PAYLOAD =====
-        function getPayload() {
-            const payload = {};
-            payload.nama_siswa = document.getElementById("nama_siswa").value || "";
-            payload.kelas = document.getElementById("kelas").value || "";
-
-            for (const k of fields) {
-                const el = document.getElementById(k);
-                payload[k] = el && el.value !== "" ? Number(el.value) : 0;
-            }
-            return payload;
-        }
-
-        // ===== RENDER RESULT =====
-        function renderResult(data) {
-            const nama = document.getElementById("nama_siswa").value || "Siswa";
-            const kelas = document.getElementById("kelas").value || "-";
-            const resultLabel = document.getElementById("result-label");
-            const resultExplanation = document.getElementById("result-explanation");
-            const resultTips = document.getElementById("result-tips");
-            const resultProbs = document.getElementById("result-probs");
-            const resultEl = document.getElementById("result");
-
-            // Display prediction label
-            resultLabel.textContent = `${data.label || data.prediction || '-'}`;
-            resultExplanation.textContent = data.explanation || `Siswa ${nama} adalah tipe belajar ${data.label || data.prediction}.`;
-
-            // Display tips
-            resultTips.innerHTML = "";
-            const tipsArray = data.tips || [];
-            if (tipsArray.length > 0) {
-                tipsArray.forEach((tip) => {
-                    const li = document.createElement("li");
-                    li.textContent = tip;
-                    resultTips.appendChild(li);
-                });
-            } else {
-                const li = document.createElement("li");
-                li.textContent = "Tidak ada saran khusus untuk tipe belajar ini.";
-                resultTips.appendChild(li);
-            }
-
-            // Display probability distribution
-            resultProbs.innerHTML = "";
-            if (data.probabilities && typeof data.probabilities === 'object') {
-                const order = ["Visual", "Auditori", "Kinestetik", "Read/Write"]; // Keep original order if possible
-                // Sort keys based on probability for better display if order is not fixed
-                const sortedProbKeys = Object.keys(data.probabilities).sort((a, b) => data.probabilities[b] - data.probabilities[a]);
-                
-                sortedProbKeys.forEach((k) => {
-                    const v = data.probabilities[k] ?? 0;
-                    if (v > 0.01) { // Only show if probability is significant
-                        const pill = document.createElement("span");
-                        pill.className = "pill";
-                        pill.style.marginRight = "8px";
-                        pill.textContent = `${k}: ${(v * 100).toFixed(1)}%`;
-                        resultProbs.appendChild(pill);
-                    }
-                });
-            }
-
-            resultEl.hidden = false;
-        }
-
-        // ===== LOCAL COMPUTE (Fallback) =====
-        function localCompute(payload) {
-            const norm = (v) => Math.max(0, Math.min(100, v)) / 100;
-
-            const visual_score =
-                0.25 * norm(payload.daya_visual_gambar * 20) +
-                0.2 * norm(payload.suka_membaca_mencatat * 20) +
-                0.1 * norm(payload.nilai_ips) +
-                0.05 * norm(payload.nilai_bahasa) +
-                0.15 * norm(payload.indeks_non_eksakta);
-
-            const auditori_score =
-                0.35 * norm(payload.mengingat_suara * 20) +
-                0.2 * norm(payload.ekskul_musik * 20) +
-                0.1 * norm(payload.nilai_bahasa);
-
-            const kinestetik_score =
-                0.3 * norm(payload.suka_praktik * 20) +
-                0.2 * norm(payload.ekskul_motorik * 20) +
-                0.1 * norm(payload.nilai_mtk) +
-                0.1 * norm(payload.nilai_ipa) +
-                0.15 * norm(payload.indeks_eksakta);
-
-            const sum = visual_score + auditori_score + kinestetik_score || 1;
-            const probs = {
-                Visual: visual_score / sum,
-                Auditori: auditori_score / sum,
-                Kinestetik: kinestetik_score / sum,
-            };
-
-            const best = Object.entries(probs).sort((a, b) => b[1] - a[1])[0][0];
-
-            const explain = {
-                Visual: "Siswa visual belajar efektif dengan gambar, warna, dan catatan terstruktur. Mereka cenderung memahami informasi yang disajikan secara visual.",
-                Auditori: "Siswa auditori menyerap informasi lewat suara, diskusi, dan penjelasan lisan. Mereka belajar dengan baik melalui mendengarkan.",
-                Kinestetik: "Siswa kinestetik optimal dengan praktik langsung, eksperimen, dan aktivitas bergerak. Mereka belajar paling efektif dengan 'melakukan'.",
-            }[best];
-
-            const tips = {
-                Visual: [
-                    "Gunakan mind map dan highlight warna untuk membuat catatan.",
-                    "Tampilkan materi pembelajaran dalam bentuk diagram, peta konsep, atau infografis.",
-                    "Rangkum poin penting menggunakan simbol, gambar, atau diagram.",
-                    "Manfaatkan video edukatif dan presentasi visual."
-                ],
-                Auditori: [
-                    "Dengarkan penjelasan guru dengan seksama atau gunakan rekaman suara pelajaran.",
-                    "Gunakan lagu, ritme, atau cerita untuk mengingat konsep.",
-                    "Diskusikan materi pelajaran dengan teman atau kelompok belajar.",
-                    "Ulangi informasi secara lisan untuk memperkuat ingatan."
-                ],
-                Kinestetik: [
-                    "Lakukan eksperimen atau praktik langsung untuk memahami konsep.",
-                    "Gunakan alat peraga, model, atau permainan edukatif yang melibatkan gerakan.",
-                    "Selingi sesi belajar dengan aktivitas fisik ringan atau simulasi.",
-                    "Buat proyek yang melibatkan pembangunan atau manipulasi objek."
-                ],
-            }[best];
-
-            return { label: best, probabilities: probs, explanation: explain, tips };
-        }
-
-        // ===== GET DOM ELEMENTS =====
-        const form = document.getElementById("analyzer-form");
-        const analyzeBtn = document.getElementById("analyzeBtn");
-        const resetBtn = document.getElementById("resetBtn");
-        const resultEl = document.getElementById("result");
-        const resultLabel = document.getElementById("result-label");
-        const resultExplanation = document.getElementById("result-explanation");
-        const resultTips = document.getElementById("result-tips");
-        const resultProbs = document.getElementById("result-probs");
-
-        // Event listener for analyze button
-        analyzeBtn.addEventListener("click", async () => {
-            const token = localStorage.getItem("access_token");
-            if (!token) {
-                alert("Token tidak ditemukan. Silakan login kembali.");
-                window.location.href = "login.html";
-                return;
-            }
-
-            const payload = getPayload();
-
-            // Basic validation for required fields (though HTML5 validation should handle it)
-            if (!payload.nama_siswa || !payload.kelas) {
-                alert("Nama Siswa dan Kelas wajib diisi.");
-                return;
-            }
-
-            try {
-                const resp = await fetch(`${API_BASE}/predict`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}` // Use Bearer token
-                    },
-                    body: JSON.stringify(payload),
-                });
-
-                if (resp.status === 401 || resp.status === 403) { // Handle both unauthorized and forbidden
-                    alert("Token sudah tidak valid atau kedaluwarsa. Silakan login kembali.");
-                    localStorage.removeItem("access_token");
-                    localStorage.removeItem("user_name");
-                    window.location.href = "login.html";
-                    return;
+        if (tabManualBtn && tabCsvBtn) {
+            tabManualBtn.addEventListener('click', () => {
+                tabManualBtn.classList.add('active');
+                tabManualBtn.classList.remove('hidden');
+                tabCsvBtn.classList.remove('active');
+                tabCsvBtn.classList.add('hidden');
+                if (analyzerForm) {
+                    analyzerForm.classList.add('active');
+                    analyzerForm.classList.remove('hidden');
                 }
-
-                if (!resp.ok) {
-                    const errorData = await resp.json().catch(() => ({})); // Safely parse error response
-                    throw new Error(`Backend error: ${errorData.detail || errorData.message || resp.statusText}`);
+                if (csvSection) {
+                    csvSection.classList.remove('active');
+                    csvSection.classList.add('hidden');
                 }
-                
-                const data = await resp.json();
-                renderResult(data);
-            } catch (e) {
-                console.warn("Backend error, falling back to local computation.", e);
-                const data = localCompute(payload);
-                renderResult(data);
-            }
-        });
+            });
 
-        // ===== RESET BUTTON =====
-        resetBtn.addEventListener("click", () => {
-            form.reset();
-            resultEl.hidden = true;
-            updateCalculatedFields(); // Reset calculated fields too
-            // Clear any potential error messages from previous attempt
-            document.querySelectorAll('.error-message').forEach(el => el.remove());
-        });
-
-        // ===== DOWNLOAD INDIVIDUAL RESULT CSV =====
-        document.getElementById("download-result-csv").addEventListener("click", () => {
-            const nama = document.getElementById("nama_siswa").value || "siswa_tanpa_nama";
-            const tipeLabelEl = document.getElementById("result-label");
-            const tipe = tipeLabelEl.textContent.trim() || "-";
-            const penjelasan = document.getElementById("result-explanation").textContent.replace(/\n/g, " ") || "-";
-            const tips = Array.from(document.querySelectorAll("#result-tips li")).map((li) => li.textContent.trim()).join("; ") || "-";
-
-            if (tipe === '-' || tipe === 'Hasil Klasifikasi') { // Check if any analysis was done
-                alert("Tidak ada hasil analisis yang tersedia untuk diunduh.");
-                return;
-            }
-
-            const kelas = document.getElementById("kelas").value || "-";
-            
-            // Prepare CSV content
-            const csvRows = [
-                ["Nama Siswa", "Kelas", "Tipe Belajar", "Penjelasan", "Saran Belajar"],
-                [nama, kelas, tipe, `"${penjelasan.replace(/"/g, '""')}"`, `"${tips.replace(/"/g, '""')}"`] // Handle quotes in data
-            ];
-
-            const csvContent = csvRows.map(row => row.join(",")).join("\n");
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `hasil_klasifikasi_${nama.replace(/\s+/g, "_").toLowerCase()}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        });
-
-        // ===== CSV/Excel Import TABS and HANDLING =====
-        const tabManual = document.getElementById('tab-manual');
-        const tabCsv = document.getElementById('tab-csv');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const csvFileInput = document.getElementById('csv-file-input');
-        const csvDropZone = document.getElementById('csv-drop-zone');
-        const csvPreview = document.getElementById('csv-preview');
-        const csvUploadBtn = document.getElementById('csv-upload-btn');
-        const csvResetBtn = document.getElementById('csv-reset-btn');
-        const csvProgress = document.getElementById('csv-progress');
-        const csvProgressText = document.getElementById('csv-progress-text');
-        const csvProgressBar = document.getElementById('csv-progress-bar');
-        const csvResultMessage = document.getElementById('csv-result-message');
-        let parsedCsvData = []; // Stores data from the uploaded file
-
-        // Tab switching logic
-        tabManual.addEventListener('click', () => switchTab('manual'));
-        tabCsv.addEventListener('click', () => switchTab('csv'));
-
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'bg-primary-blue', 'text-white'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.add('bg-gray-200', 'text-gray-700'));
-            
-            if (tab === 'manual') {
-                tabManual.classList.add('active', 'bg-primary-blue', 'text-white');
-                tabManual.classList.remove('bg-gray-200', 'text-gray-700');
-            } else {
-                tabCsv.classList.add('active', 'bg-primary-blue', 'text-white');
-                tabCsv.classList.remove('bg-gray-200', 'text-gray-700');
-            }
-
-            tabContents.forEach(content => {
-                if ((tab === 'manual' && content.id === 'analyzer-form') || 
-                    (tab === 'csv' && content.id === 'csv-section')) { // Changed ID here
-                    content.classList.remove('hidden');
-                    content.classList.add('active');
-                } else {
-                    content.classList.add('hidden');
-                    content.classList.remove('active');
+            tabCsvBtn.addEventListener('click', () => {
+                tabCsvBtn.classList.add('active');
+                tabManualBtn.classList.remove('active');
+                if (csvSection) {
+                    csvSection.classList.add('active');
+                    csvSection.classList.remove('hidden');
+                }
+                if (analyzerForm) {
+                    analyzerForm.classList.remove('active');
+                    analyzerForm.classList.add('hidden');
                 }
             });
         }
 
-        // CSV/Excel file handling
-        csvDropZone.addEventListener('click', () => csvFileInput.click());
-        csvDropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            csvDropZone.classList.add('bg-blue-100');
-        });
-        csvDropZone.addEventListener('dragleave', () => csvDropZone.classList.remove('bg-blue-100'));
-        csvDropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            csvDropZone.classList.remove('bg-blue-100');
-            const files = e.dataTransfer.files;
-            if (files.length) handleFile(files[0]);
-        });
-
-        csvFileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) handleFile(e.target.files[0]);
-        });
-
-        function handleFile(file) {
-            const fileName = file.name.toLowerCase();
-            const validExtensions = ['.csv', '.xlsx', '.xls'];
-            const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
-            
-            if (!validExtensions.includes(fileExtension)) {
-                alert('Format file tidak didukung. Gunakan file .csv, .xlsx, atau .xls');
-                csvFileInput.value = ''; // Clear the input
-                return;
-            }
-
-            // Display selected file name
-            document.getElementById('selected-file-info').classList.remove('hidden');
-            document.getElementById('selected-file-name').textContent = file.name;
-
-            if (fileExtension === '.csv') {
-                handleCsvFile(file);
-            } else { // .xlsx or .xls
-                handleExcelFile(file);
-            }
-            
-            csvFileInput.value = '';
-        }
-
-        function handleCsvFile(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const csv = e.target.result;
-                    parsedCsvData = parseCsv(csv);
-                    
-                    if (parsedCsvData.length === 0) {
-                        alert('File CSV kosong atau formatnya salah.');
-                        csvFileInput.value = ''; // Clear the input
-                        return;
-                    }
-
-                    previewCsvData(parsedCsvData);
-                    csvUploadBtn.disabled = false;
-                } catch (error) {
-                    console.error("CSV parsing error:", error);
-                    alert('Error saat membaca file CSV: ' + error.message);
-                    csvFileInput.value = ''; // Clear the input
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function handleExcelFile(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '', header: 1 }); // Use header: 1 to get raw headers
-                    
-                    if (jsonData.length === 0) {
-                        alert('File Excel kosong atau tidak memiliki data.');
-                        csvFileInput.value = ''; // Clear the input
-                        return;
-                    }
-
-                    // Extract headers from the first row
-                    const headers = jsonData[0].map(h => String(h).trim().toLowerCase().replace(/\s+/g, '_'));
-                    const rows = jsonData.slice(1); // Data rows
-
-                    // Map data to objects using normalized headers
-                    parsedCsvData = rows.map(row => {
-                        const objRow = {};
-                        headers.forEach((header, idx) => {
-                            objRow[header] = row[idx] !== undefined ? row[idx] : '';
-                        });
-                        return objRow;
-                    });
-
-                    previewCsvData(parsedCsvData);
-                    csvUploadBtn.disabled = false;
-                    
-                    console.log('[v0] Excel file parsed successfully:', parsedCsvData.length, 'rows');
-                } catch (error) {
-                    console.error('[v0] Error parsing Excel:', error);
-                    alert('Error saat membaca file Excel: ' + error.message);
-                    csvFileInput.value = ''; // Clear the input
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        // Parses CSV string into an array of objects
-        function parseCsv(csv) {
-            const lines = csv.trim().split('\n');
-            if (lines.length === 0) return [];
-
-            // Extract headers from the first line, normalize them
-            const headers = lines[0].split(',').map(h => String(h).trim().toLowerCase().replace(/\s+/g, '_'));
-            const data = [];
-
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',').map(v => v.trim());
-                if (values.length !== headers.length) {
-                    console.warn(`Skipping row ${i + 1} due to incorrect number of columns.`);
-                    continue; // Skip row if column count mismatch
-                }
-                const row = {};
-                headers.forEach((header, idx) => {
-                    row[header] = values[idx] || ''; // Use empty string if value is missing
-                });
-                data.push(row);
-            }
-            return data;
-        }
-
-        // Displays a preview of the first few rows of the parsed data
-        function previewCsvData(data) {
-            csvPreview.classList.remove('hidden');
-            document.getElementById('preview-count').textContent = data.length; 
-
-            const headerRow = document.getElementById('preview-header'); 
-            const bodyRows = document.getElementById('preview-body');
-            
-            if (headerRow) headerRow.innerHTML = '';
-            bodyRows.innerHTML = '';
-
-            if (data.length === 0) return;
-
-            const headers = Object.keys(data[0]);
-            
-            if (headerRow) {
-                headers.forEach(header => {
-                    const th = document.createElement('th');
-                    th.className = 'border border-gray-300 px-2 py-1 text-left font-medium bg-gray-100';
-                    th.textContent = header.replace(/_/g, ' ').toUpperCase(); 
-                    headerRow.appendChild(th);
-                });
-            }
-
-            data.slice(0, 5).forEach(row => {
-                const tr = document.createElement('tr');
-                headers.forEach(header => {
-                    const td = document.createElement('td');
-                    td.className = 'border border-gray-300 px-2 py-1';
-                    td.textContent = row[header] !== '' ? row[header] : '-'; 
-                    tr.appendChild(td);
-                });
-                bodyRows.appendChild(tr);
-            });
-            
-            if (data.length > 5) {
-                const tr = document.createElement('tr');
-                const td = document.createElement('td');
-                td.className = 'border border-gray-300 px-2 py-1 text-center italic text-gray-500';
-                td.colSpan = headers.length;
-                td.textContent = `... dan ${data.length - 5} baris lainnya`;
-                tr.appendChild(td);
-                bodyRows.appendChild(tr);
-            }
-        }
-
-        // Handles the upload and analysis of data from the CSV/Excel file
-        csvUploadBtn.addEventListener('click', async () => {
-            if (parsedCsvData.length === 0) {
-                alert('Tidak ada data yang siap untuk diunggah.');
-                return;
-            }
-
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                alert('Sesi Anda telah berakhir. Silakan login kembali.');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            csvProgress.classList.remove('hidden');
-            csvUploadBtn.disabled = true;
-            csvResetBtn.disabled = true; // Disable reset while uploading
-            let successCount = 0;
-            let errorCount = 0;
-            const csvResults = []; // Store individual results for potential display
-
-            // Helper function to calculate derived fields and normalize input for prediction
-            const calculateAndValidatePayload = (row) => {
-                const mappedRow = {};
-                mappedRow.nama_siswa = row.nama_siswa || row.nama || '';
-                mappedRow.kelas = row.kelas || '';
-                
-                mappedRow.nilai_bahasa = Math.max(0, Math.min(100, parseFloat(row.nilai_bahasa) || 0));
-                mappedRow.nilai_mtk = Math.max(0, Math.min(100, parseFloat(row.nilai_mtk) || 0));
-                mappedRow.nilai_ipa = Math.max(0, Math.min(100, parseFloat(row.nilai_ipa) || 0));
-                mappedRow.nilai_ips = Math.max(0, Math.min(100, parseFloat(row.nilai_ips) || 0));
-
-                mappedRow.daya_visual_gambar = Math.max(1, Math.min(5, parseInt(row.daya_visual_gambar) || 3));
-                mappedRow.mengingat_suara = Math.max(1, Math.min(5, parseInt(row.mengingat_suara) || 3));
-                mappedRow.suka_praktik = Math.max(1, Math.min(5, parseInt(row.suka_praktik) || 3));
-                mappedRow.suka_membaca_mencatat = Math.max(1, Math.min(5, parseInt(row.suka_membaca_mencatat) || 3));
-                mappedRow.ekskul_motorik = Math.max(1, Math.min(5, parseInt(row.ekskul_motorik) || 3));
-                mappedRow.ekskul_musik = Math.max(1, Math.min(5, parseInt(row.ekskul_musik) || 3));
-
-                const avg = (mappedRow.nilai_bahasa + mappedRow.nilai_mtk + mappedRow.nilai_ipa + mappedRow.nilai_ips) / 4;
-                const eksakta = (mappedRow.nilai_mtk + mappedRow.nilai_ipa) / 2;
-                const nonEksakta = (mappedRow.nilai_bahasa + mappedRow.nilai_ips) / 2;
-
-                const payload = {
-                    nama_siswa: mappedRow.nama_siswa,
-                    kelas: mappedRow.kelas,
-                    nilai_bahasa: mappedRow.nilai_bahasa,
-                    nilai_mtk: mappedRow.nilai_mtk,
-                    nilai_ipa: mappedRow.nilai_ipa,
-                    nilai_ips: mappedRow.nilai_ips,
-                    rata_rata_umum: parseFloat(avg.toFixed(2)), 
-                    indeks_eksakta: parseFloat(eksakta.toFixed(2)),
-                    indeks_non_eksakta: parseFloat(nonEksakta.toFixed(2)),
-                    daya_visual_gambar: mappedRow.daya_visual_gambar,
-                    mengingat_suara: mappedRow.mengingat_suara,
-                    suka_praktik: mappedRow.suka_praktik,
-                    suka_membaca_mencatat: mappedRow.suka_membaca_mencatat,
-                    ekskul_motorik: mappedRow.ekskul_motorik,
-                    ekskul_musik: mappedRow.ekskul_musik,
-                };
-                return payload;
-            };
-
-            // Process each row
-            for (let i = 0; i < parsedCsvData.length; i++) {
-                const row = parsedCsvData[i];
-                const payload = calculateAndValidatePayload(row);
-                
-                try {
-                    const resp = await fetch(`${API_BASE}/predict`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (resp.ok) {
-                        const data = await resp.json();
-                        csvResults.push({
-                            nama_siswa: payload.nama_siswa,
-                            kelas: payload.kelas,
-                            ...data 
-                        });
-                        successCount++;
-                    } else {
-                        const errorDetail = await resp.json().catch(() => ({})); 
-                        console.error(`Row ${i + 1} (${payload.nama_siswa || 'Unknown'}) failed:`, errorDetail);
-                        errorCount++;
-                    }
-                } catch (e) {
-                    console.error(`Network or unexpected error for row ${i + 1} (${payload.nama_siswa || 'Unknown'}):`, e);
-                    errorCount++;
-                }
-
-                const progress = ((i + 1) / parsedCsvData.length) * 100;
-                csvProgressText.textContent = `${Math.round(progress)}%`;
-                csvProgressBar.style.width = `${progress}%`;
-            }
-
-            csvUploadBtn.disabled = false;
-            csvResetBtn.disabled = false; 
-            
-            const messageText = `Selesai! ${successCount} data berhasil dianalisis, ${errorCount} data gagal.`;
-            let messageClass = '';
-            if (errorCount === 0) {
-                messageClass = 'bg-green-100 text-green-800'; 
-            } else if (successCount === 0) {
-                messageClass = 'bg-red-100 text-red-800'; 
-            } else {
-                messageClass = 'bg-yellow-100 text-yellow-800'; 
-            }
-
-            csvResultMessage.innerHTML = `<p class="${messageClass} p-3 rounded-lg">${messageText}</p>`;
-            csvResultMessage.classList.remove('hidden');
-
-            alert(`Upload data selesai!\nBerhasil: ${successCount}\nGagal: ${errorCount}`);
-
-            if (csvResults.length > 0) {
-                displayCsvResults(csvResults); 
-            }
-        });
-
-        function displayCsvResults(results) {
-            const resultEl = document.getElementById("result");
-            const resultLabel = document.getElementById("result-label");
-            const resultExplanation = document.getElementById("result-explanation");
-            const resultTips = document.getElementById("result-tips");
-            const resultProbs = document.getElementById("result-probs");
-
-            resultLabel.textContent = `${results.length} Siswa Teranalisis`;
-            resultExplanation.innerHTML = `
-                <div class="text-sm text-gray-600">
-                    Ringkasan hasil analisis dari data yang diimpor. Anda dapat mengunduh laporan lengkap dalam format CSV atau Excel.
-                </div>
-            `;
-            resultTips.innerHTML = '<li class="text-sm text-gray-600">Total: ' + results.length + ' siswa telah dianalisis dengan sukses.</li>';
-            resultProbs.innerHTML = ''; 
-            
-            resultEl.hidden = false;
-            
-            showDetailedResults(results);
-            
-            resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        csvResetBtn.addEventListener('click', () => {
-            csvFileInput.value = ''; 
-            parsedCsvData = []; 
-            csvPreview.classList.add('hidden'); 
-            csvProgress.classList.add('hidden'); 
-            csvResultMessage.innerHTML = ''; 
-            csvResultMessage.classList.add('hidden');
-            csvUploadBtn.disabled = true; 
-            csvResetBtn.disabled = false; 
-            document.getElementById('selected-file-info').classList.add('hidden'); 
-            document.getElementById('selected-file-name').textContent = '';
-            document.getElementById('detailed-results-section').classList.add('hidden'); 
-            document.getElementById('result').hidden = true; 
-        });
-
-        async function downloadFiltered(format) {
-            const token = localStorage.getItem("access_token");
-            if (!token) {
-                alert("Token tidak ditemukan. Silakan login kembali.");
-                window.location.href = "login.html";
-                return;
-            }
-
-            const filterClass = document.getElementById("filterClass")?.value || null;
-            const filterDate = document.getElementById("filterDate")?.value || null;
-            const filterDateFrom = document.getElementById("filterDateFrom")?.value || null;
-            const filterDateTo = document.getElementById("filterDateTo")?.value || null;
-
-            const filterData = {
-                format: format,
-                kelas: filterClass,
-                date: filterDate,
-                date_from: filterDateFrom,
-                date_to: filterDateTo,
-            };
-
-            Object.keys(filterData).forEach(key => {
-                if (filterData[key] === null || filterData[key] === '') {
-                    delete filterData[key];
-                }
-            });
-
-            try {
-                const resp = await fetch(`${API_BASE}/api/download-all`, {
-                    method: "POST", 
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}` 
-                    },
-                    body: JSON.stringify(filterData)
-                });
-
-                if (resp.status === 401 || resp.status === 403) {
-                    alert("Token sudah tidak valid atau kedaluwarsa. Silakan login kembali.");
-                    localStorage.removeItem("access_token");
-                    localStorage.removeItem("user_name");
-                    window.location.href = "login.html";
-                    return;
-                }
-
-                if (resp.status === 404) {
-                    alert("Tidak ada data yang sesuai dengan filter yang dipilih.");
-                    return;
-                }
-
-                if (!resp.ok) {
-                    const errData = await resp.json().catch(() => ({})); 
-                    throw new Error(`Backend error: ${errData.detail || errData.message || resp.statusText}`);
-                }
-
-                const blob = await resp.blob();
-                if (blob.size === 0) {
-                    alert("File kosong. Tidak ada data yang dapat diunduh.");
-                    return;
-                }
-
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = format === 'excel' ? 'hasil_klasifikasi_semua.xlsx' : 'hasil_klasifikasi_semua.csv';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-
-                console.log(`[v0] File ${format.toUpperCase()} downloaded successfully`);
-            } catch (e) {
-                console.error("[v0] Download error:", e);
-                alert(`Gagal mengunduh file: ${e.message}`);
-            }
-        }
-
-        document.getElementById("download-results-excel").addEventListener("click", async () => {
-            await downloadFiltered('excel');
-        });
-        
-        document.getElementById("download-results-csv").addEventListener("click", async () => {
-            await downloadFiltered('csv');
-        });
-
-        document.getElementById('download-template-csv').addEventListener('click', (e) => { 
+        // Template download handlers
+        document.getElementById('download-template-csv')?.addEventListener('click', (e) => {
             e.preventDefault();
             const template = 'nama_siswa,kelas,nilai_bahasa,nilai_mtk,nilai_ipa,nilai_ips,daya_visual_gambar,mengingat_suara,suka_praktik,suka_membaca_mencatat,ekskul_motorik,ekskul_musik\nContoh Siswa,4A,85,75,80,78,4,3,4,4,3,3\nSiswa Lain,4B,78,82,85,75,3,4,5,3,4,2';
             const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
@@ -1330,9 +624,8 @@
             URL.revokeObjectURL(url);
         });
 
-        document.getElementById('download-template-excel').addEventListener('click', (e) => { 
+        document.getElementById('download-template-excel')?.addEventListener('click', (e) => {
             e.preventDefault();
-            
             const templateData = [
                 {
                     nama_siswa: 'Contoh Siswa 1',
@@ -1367,88 +660,65 @@
             const ws = XLSX.utils.json_to_sheet(templateData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
-
-            ws['!cols'] = [
-                { wch: 20 }, 
-                { wch: 8 },  
-                { wch: 12 }, 
-                { wch: 10 }, 
-                { wch: 10 }, 
-                { wch: 10 }, 
-                { wch: 18 }, 
-                { wch: 15 }, 
-                { wch: 12 }, 
-                { wch: 20 }, 
-                { wch: 14 }, 
-                { wch: 12 }, 
-            ];
-
+            ws['!cols'] = [{wch: 20}, {wch: 8}, {wch: 12}, {wch: 10}, {wch: 10}, {wch: 10}, {wch: 18}, {wch: 15}, {wch: 12}, {wch: 20}, {wch: 14}, {wch: 12}];
             XLSX.writeFile(wb, 'template_siswa.xlsx');
         });
 
-        let detailedResults = [];
-
-        function showDetailedResults(results) {
-            const detailedSection = document.getElementById('detailed-results-section');
-            const resultsBody = document.getElementById('detailed-results-body');
-            
-            detailedResults = results; 
-            resultsBody.innerHTML = '';
-
-            results.forEach(result => {
-                const tr = document.createElement('tr');
-                const visualProb = result.probabilities?.Visual ?? 0;
-                const auditoriProb = result.probabilities?.Auditori ?? 0;
-                const kinestetikProb = result.probabilities?.Kinestetik ?? 0;
-
-                const visual = (visualProb * 100).toFixed(1);
-                const auditori = (auditoriProb * 100).toFixed(1);
-                const kinestetik = (kinestetikProb * 100).toFixed(1);
-                
-                tr.innerHTML = `
-                    <td class="border border-gray-300 px-2 sm:px-4 py-2">${result.nama_siswa}</td>
-                    <td class="border border-gray-300 px-2 sm:px-4 py-2">${result.kelas}</td>
-                    <td class="border border-gray-300 px-2 sm:px-4 py-2 highlight">${result.label}</td>
-                    <td class="border border-gray-300 px-2 sm:px-4 py-2 percentage">${visual}%</td>
-                    <td class="border border-gray-300 px-2 sm:px-4 py-2 percentage">${auditori}%</td>
-                    <td class="border border-gray-300 px-2 sm:px-4 py-2 percentage">${kinestetik}%</td>
-                `;
-                resultsBody.appendChild(tr);
-            });
-
-            detailedSection.classList.remove('hidden');
-        }
-
-        document.getElementById('download-results-excel').addEventListener('click', () => {
-            if (detailedResults.length === 0) {
-                alert('Tidak ada data untuk diunduh.');
+        async function downloadFiltered(format) {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                alert("Token tidak ditemukan. Silakan login kembali.");
+                window.location.href = "login.html";
                 return;
             }
 
-            const excelData = detailedResults.map(result => ({
-                'Nama Siswa': result.nama_siswa,
-                'Kelas': result.kelas,
-                'Tipe Belajar': result.label,
-                'Visual (%)': ((result.probabilities?.Visual ?? 0) * 100).toFixed(1),
-                'Auditori (%)': ((result.probabilities?.Auditori ?? 0) * 100).toFixed(1),
-                'Kinestetik (%)': ((result.probabilities?.Kinestetik ?? 0) * 100).toFixed(1)
-            }));
+            const filterData = {format: format};
 
-            const ws = XLSX.utils.json_to_sheet(excelData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Hasil Analisis');
+            try {
+                const resp = await fetch(`${API_BASE}/api/download-all`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(filterData)
+                });
 
-            ws['!cols'] = [
-                { wch: 20 }, 
-                { wch: 8 },  
-                { wch: 15 }, 
-                { wch: 12 }, 
-                { wch: 12 }, 
-                { wch: 12 }  
-            ];
+                if (resp.status === 401 || resp.status === 403) {
+                    alert("Token sudah tidak valid. Silakan login kembali.");
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("user_name");
+                    window.location.href = "login.html";
+                    return;
+                }
 
-            XLSX.writeFile(wb, `hasil_analisis_${new Date().getTime()}.xlsx`);
-        });
+                if (!resp.ok) {
+                    const errData = await resp.json().catch(() => ({}));
+                    throw new Error(errData.detail || errData.message || resp.statusText);
+                }
+
+                const blob = await resp.blob();
+                if (blob.size === 0) {
+                    alert("File kosong. Tidak ada data yang dapat diunduh.");
+                    return;
+                }
+
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = format === 'excel' ? 'hasil_klasifikasi_semua.xlsx' : 'hasil_klasifikasi_semua.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } catch (e) {
+                console.error("Download error:", e);
+                alert(`Gagal mengunduh file: ${e.message}`);
+            }
+        }
+
+        document.getElementById("download-results-excel")?.addEventListener("click", () => downloadFiltered('excel'));
+        document.getElementById("download-result-csv")?.addEventListener("click", () => downloadFiltered('csv'));
     </script>
 </body>
 </html>
