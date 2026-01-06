@@ -401,7 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${TOKEN}`,
+              Authorization: TOKEN,
             },
             body: JSON.stringify(payload),
           })
@@ -523,7 +523,7 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${TOKEN}`,
+           Authorization: TOKEN,
           },
           body: JSON.stringify(payload),
         })
@@ -583,7 +583,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const response = await fetch(`${BACKEND_URL}/api/download-all?format=excel`, {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${TOKEN}`,
+            Authorization: TOKEN,
           },
         })
 

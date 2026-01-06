@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Klasifikasi Tipe Karakter Belajar - SD Insan Kamil</title>
+    
+    <script>
+      window.API_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost:5004'
+        : 'https://api.xyz.biz.id';
+      window.API_BASE = window.API_URL;
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-light': '#E3F2FD',
+                        'primary-blue': '#4FC3F7',
+                        'primary-dark': '#0288D1',
+                        'text-dark': '#1f2937',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    
+    <style>
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -10;
+            background-color: #E3F2FD;
+        }
+
+        .floating-icon {
+            position: absolute;
+            font-size: 2rem;
+            animation: float-up 20s infinite linear;
+            opacity: 0.5;
+            color: rgba(79, 195, 247, 0.4);
+        }
+
+        .floating-icon:nth-child(1) { left: 5%; animation-duration: 15s; animation-delay: 0s; font-size: 2rem; }
+        .floating-icon:nth-child(2) { left: 15%; animation-duration: 25s; animation-delay: 2s; font-size: 3rem; }
+        .floating-icon:nth-child(3) { left: 25%; animation-duration: 18s; animation-delay: 4s; font-size: 1.5rem; }
+        .floating-icon:nth-child(4) { left: 35%; animation-duration: 22s; animation-delay: 6s; font-size: 2.5rem; }
+        .floating-icon:nth-child(5) { left: 45%; animation-duration: 17s; animation-delay: 8s; font-size: 3.5rem; }
+        .floating-icon:nth-child(6) { left: 55%; animation-duration: 20s; animation-delay: 10s; font-size: 2rem; }
+        .floating-icon:nth-child(7) { left: 65%; animation-duration: 16s; animation-delay: 12s; font-size: 3rem; }
+        .floating-icon:nth-child(8) { left: 75%; animation-duration: 28s; animation-delay: 1s; font-size: 2.2rem; }
+        .floating-icon:nth-child(9) { left: 85%; animation-duration: 19s; animation-delay: 3s; font-size: 1.8rem; }
+        .floating-icon:nth-child(10) { left: 95%; animation-duration: 23s; animation-delay: 5s; font-size: 2.7rem; }
+        .floating-icon:nth-child(11) { left: 2%; animation-duration: 14s; animation-delay: 7s; font-size: 3.2rem; }
+        .floating-icon:nth-child(12) { left: 18%; animation-duration: 21s; animation-delay: 9s; font-size: 2.1rem; }
+        .floating-icon:nth-child(13) { left: 40%; animation-duration: 13s; animation-delay: 11s; font-size: 1.6rem; }
+        .floating-icon:nth-child(14) { left: 70%; animation-duration: 26s; animation-delay: 13s; font-size: 3.4rem; }
+        .floating-icon:nth-child(15) { left: 92%; animation-duration: 18s; animation-delay: 14s; font-size: 2.9rem; }
+        
+        @keyframes float-up {
+            0% { transform: translateY(100vh) scale(0.8) rotate(0deg); opacity: 0.5; }
+            50% { opacity: 0.7; }
+            100% { transform: translateY(-10vh) scale(1.2) rotate(360deg); opacity: 0; }
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: 1fr;
+        }
+        @media (min-width: 640px) {
+            .form-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 639px) {
+            .form-grid {
+                gap: 1rem;
+            }
+        }
+
+        .tab-btn.active {
+            background-color: #4FC3F7;
+            color: white;
+        }
+        .tab-btn:not(.active) {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        .tab-content {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .tab-content.hidden {
+            opacity: 0;
+            transform: translateX(-20px);
+            pointer-events: none;
+        }
+        .tab-content.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        #csv-drop-zone {
+            cursor: pointer;
+        }
+        .pill {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            background-color: #E3F2FD;
+            color: #0288D1;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        #detailed-results-section {
+            margin-top: 2rem;
+        }
+        #detailed-results-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        #detailed-results-table th,
+        #detailed-results-table td {
+            border: 1px solid #d1d5db;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+        #detailed-results-table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        @media (max-width: 768px) {
+            .floating-icon {
+                font-size: 1rem;
+                opacity: 0.3;
+            }
+            .floating-icon:nth-child(1) { font-size: 1rem; }
+            .floating-icon:nth-child(2) { font-size: 1.5rem; }
+            .floating-icon:nth-child(3) { font-size: 0.8rem; }
+            .floating-icon:nth-child(4) { font-size: 1.2rem; }
+            .floating-icon:nth-child(5) { font-size: 1.8rem; }
+            .floating-icon:nth-child(6) { font-size: 1rem; }
+            .floating-icon:nth-child(7) { font-size: 1.5rem; }
+            .floating-icon:nth-child(8) { font-size: 1.1rem; }
+            .floating-icon:nth-child(9) { font-size: 0.9rem; }
+            .floating-icon:nth-child(10) { font-size: 1.3rem; }
+            .floating-icon:nth-child(11) { font-size: 1.6rem; }
+            .floating-icon:nth-child(12) { font-size: 1.05rem; }
+            .floating-icon:nth-child(13) { font-size: 0.8rem; }
+            .floating-icon:nth-child(14) { font-size: 1.7rem; }
+            .floating-icon:nth-child(15) { font-size: 1.45rem; }
+            #detailed-results-table th,
+            #detailed-results-table td {
+                padding: 0.4rem 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans text-text-dark">
+    <div class="animated-bg">
+        <i class="floating-icon" data-lucide="book"></i>
+        <i class="floating-icon" data-lucide="brain"></i>
+        <i class="floating-icon" data-lucide="lightbulb"></i>
+        <i class="floating-icon" data-lucide="target"></i>
+        <i class="floating-icon" data-lucide="zap"></i>
+        <i class="floating-icon" data-lucide="star"></i>
+        <i class="floating-icon" data-lucide="pen-tool"></i>
+        <i class="floating-icon" data-lucide="layers"></i>
+        <i class="floating-icon" data-lucide="activity"></i>
+        <i class="floating-icon" data-lucide="trello"></i>
+        <i class="floating-icon" data-lucide="eye"></i>
+        <i class="floating-icon" data-lucide="music"></i>
+        <i class="floating-icon" data-lucide="rss"></i>
+        <i class="floating-icon" data-lucide="user-check"></i>
+        <i class="floating-icon" data-lucide="award"></i>
+    </div>
+
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+    <div class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 flex flex-row items-center justify-between gap-3">
+        
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <img src="assets/logo.png" alt="Logo" class="h-8 sm:h-10 md:h-12 w-auto object-contain flex-shrink-0" />
+            
+            <div class="flex flex-col min-w-0">
+                <h1 class="text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-primary-dark truncate uppercase tracking-tight">
+                    Sistem Klasifikasi Karakter
+                </h1>
+                <p class="text-[10px] sm:text-xs text-gray-500 truncate font-medium">
+                    SD Insan Kamil | ML (SVM)
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+            <p class="hidden md:block text-sm text-gray-700 whitespace-nowrap">
+                Selamat Datang, <span id="teacherName" class="font-bold text-primary-dark">-</span>
+            </p>
+            
+            <button id="logoutBtn" class="flex items-center justify-center gap-1 sm:gap-2 bg-primary-blue text-white hover:bg-primary-dark transition duration-300 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold shadow-md flex-shrink-0">
+                <i data-lucide='log-out' class='w-3 sm:w-4 h-3 sm:h-4'></i>
+                <span class="hidden sm:inline">Logout</span>
+            </button>
+        </div>
+
+    </div>
+</header>
+
+    <section class="py-6 sm:py-8 lg:py-10">
+        <div class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row items-center bg-white/90 backdrop-blur-sm p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue gap-4 sm:gap-6 lg:gap-8">
+                
+                <div class="hero-copy lg:w-1/2 w-full">
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-dark mb-3 sm:mb-4">
+                        Kenali Gaya Belajar: Visual, Auditori, atau Kinestetik
+                    </h2>
+                    <p class="text-sm sm:text-base lg:text-lg text-gray-700 leading-relaxed">
+                        Masukkan identitas dan nilai akademik & non-akademik siswa, lalu
+                        klik Analisis. Hasil akan menampilkan tipe belajar dominan,
+                        penjelasan, serta saran bermanfaat untuk pengajaran yang lebih personal.
+                    </p>
+                </div>
+
+                <!-- Perbaiki banner agar lebih kecil dan rapi -->
+                <div class="lg:w-1/2 w-full">
+                    <div class="relative rounded-lg sm:rounded-xl overflow-hidden shadow-lg transition duration-500 hover:scale-[1.02] transform border-4 border-white">
+                        <img 
+                            src="assets/inka.png" 
+                            alt="Banner Klasifikasi Siswa" 
+                            class="w-full h-48 sm:h-64 lg:h-80 object-cover object-center"
+                            onerror="this.src='https://via.placeholder.com/800x400?text=Logo+Inka'"
+                        />
+                        <div class="absolute inset-0 bg-blue-200/20"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <main class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mb-12 sm:mb-16">
+        <div class="flex gap-2 sm:gap-3 mb-4 sm:mb-6 flex-wrap">
+            <button id="tab-manual" class="tab-btn active flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-primary-blue text-white rounded-lg font-semibold hover:bg-primary-dark transition text-xs sm:text-sm">
+                <i data-lucide="edit-3" class="w-4 sm:w-5 h-4 sm:h-5"></i> <span class="hidden sm:inline">Input</span> Manual
+            </button>
+            <button id="tab-csv" class="tab-btn flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition text-xs sm:text-sm">
+                <i data-lucide="upload" class="w-4 sm:w-5 h-4 sm:h-5"></i> <span class="hidden sm:inline">Import</span> CSV/Excel
+            </button>
+        </div>
+
+        <!-- Form Utama (Manual Input) -->
+        <form id="analyzer-form" class="bg-white p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue tab-content active" novalidate>
+            <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
+                <i data-lucide="user-check" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Data Siswa
+            </h3>
+            <div class="form-grid">
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Nama Siswa</span>
+                    <input
+                        type="text"
+                        id="nama_siswa"
+                        placeholder="Masukkan nama lengkap"
+                        required
+                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm"
+                    />
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Kelas</span>
+                    <input type="text" id="kelas" placeholder="Contoh: 4A" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm" />
+                </label>
+            </div>
+
+            <h3 class="text-xl sm:text-2xl font-bold mt-6 sm:mt-10 mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
+                <i data-lucide="award" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Kriteria Akademik (Nilai 0-100)
+            </h3>
+            <div class="form-grid">
+                <label class="block"><span class="text-sm text-gray-700 font-medium mb-1 block">Nilai Bahasa Indonesia</span>
+                    <input type="number" id="nilai_bahasa" min="0" max="100" placeholder="0 - 100" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm" />
+                </label>
+                <label class="block"><span class="text-sm text-gray-700 font-medium mb-1 block">Nilai Matematika</span>
+                    <input type="number" id="nilai_mtk" min="0" max="100" placeholder="0 - 100" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm" />
+                </label>
+                <label class="block"><span class="text-sm text-gray-700 font-medium mb-1 block">Nilai IPA</span>
+                    <input type="number" id="nilai_ipa" min="0" max="100" placeholder="0 - 100" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm" />
+                </label>
+                <label class="block"><span class="text-sm text-gray-700 font-medium mb-1 block">Nilai IPS</span>
+                    <input type="number" id="nilai_ips" min="0" max="100" placeholder="0 - 100" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 text-sm" />
+                </label>
+                
+                <label class="block bg-primary-light p-2 sm:p-3 rounded-lg border border-primary-blue/50">
+                    <span class="text-primary-dark font-medium mb-1 block text-sm">Rata-rata Umum</span>
+                    <input type="number" id="rata_rata_umum" readonly class="w-full px-3 sm:px-4 py-2 border border-primary-blue/80 bg-white rounded-lg font-semibold text-primary-dark text-sm" />
+                </label>
+                <label class="block bg-primary-light p-2 sm:p-3 rounded-lg border border-primary-blue/50">
+                    <span class="text-primary-dark font-medium mb-1 block text-sm">Indeks Eksakta (MTK & IPA)</span>
+                    <input type="number" id="indeks_eksakta" readonly class="w-full px-3 sm:px-4 py-2 border border-primary-blue/80 bg-white rounded-lg font-semibold text-primary-dark text-sm" />
+                </label>
+                <label class="block bg-primary-light p-2 sm:p-3 rounded-lg border border-primary-blue/50">
+                    <span class="text-primary-dark font-medium mb-1 block text-sm">Indeks Non-Eksakta (B. Ind & IPS)</span>
+                    <input type="number" id="indeks_non_eksakta" readonly class="w-full px-3 sm:px-4 py-2 border border-primary-blue/80 bg-white rounded-lg font-semibold text-primary-dark text-sm" />
+                </label>
+            </div>
+
+            <h3 class="text-xl sm:text-2xl font-bold mt-6 sm:mt-10 mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
+                <i data-lucide="hand-metal" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Kriteria Non-Akademik (Skala 1-5)
+            </h3>
+            <div class="form-grid">
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Daya Visual / Gambar</span>
+                    <select id="daya_visual_gambar" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Mengingat Lewat Suara (Auditori)</span>
+                    <select id="mengingat_suara" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Suka Praktik / Hands-on (Kinestetik)</span>
+                    <select id="suka_praktik" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Suka Membaca / Mencatat (Visual)</span>
+                    <select id="suka_membaca_mencatat" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Ekskul Motorik / Olahraga</span>
+                    <select id="ekskul_motorik" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Ekskul Musik / Seni</span>
+                    <select id="ekskul_musik" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-gray-700 font-medium mb-1 block">Konsentrasi Belajar</span>
+                    <select id="konsentrasi_belajar" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-blue focus:border-primary-blue transition duration-200 bg-white text-sm">
+                        <option value="1">1 - Tidak Sesuai</option>
+                        <option value="2">2 - Kurang Sesuai</option>
+                        <option value="3" selected>3 - Cukup Sesuai</option>
+                        <option value="4">4 - Sesuai</option>
+                        <option value="5">5 - Sangat Sesuai</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="mt-6 sm:mt-10 flex gap-2 sm:gap-4 flex-wrap">
+                <button id="analyzeBtn" type="submit" class="flex-1 sm:flex-initial px-6 sm:px-8 py-2 sm:py-3 bg-primary-blue text-white rounded-lg font-bold hover:bg-primary-dark transition duration-300 flex items-center justify-center gap-2 text-sm sm:text-base shadow-md">
+                    <i data-lucide="zap" class="w-4 sm:w-5 h-4 sm:h-5"></i> Analisis Tipe Karakter
+                </button>
+                <button type="reset" class="flex-1 sm:flex-initial px-6 sm:px-8 py-2 sm:py-3 bg-gray-400 text-white rounded-lg font-bold hover:bg-gray-500 transition duration-300 flex items-center justify-center gap-2 text-sm sm:text-base shadow-md">
+                    <i data-lucide="rotate-ccw" class="w-4 sm:w-5 h-4 sm:h-5"></i> Reset
+                </button>
+            </div>
+        </form>
+
+        <!-- CSV/Excel Import Tab -->
+        <div id="csv-import-tab" class="bg-white p-4 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl shadow-xl border-t-4 border-primary-blue tab-content hidden">
+            <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-dark flex items-center border-b pb-2 sm:pb-3">
+                <i data-lucide="upload" class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3 text-primary-blue"></i> Import CSV / Excel
+            </h3>
+
+            <div class="space-y-4 sm:space-y-6">
+                <div id="csv-drop-zone" class="border-2 border-dashed border-primary-blue/50 rounded-lg p-6 sm:p-10 text-center bg-primary-light/50 hover:bg-primary-light transition cursor-pointer">
+                    <i data-lucide="cloud-upload" class="w-12 sm:w-16 h-12 sm:h-16 mx-auto mb-3 text-primary-blue opacity-60"></i>
+                    <p class="text-sm sm:text-base font-semibold text-primary-dark mb-1">Seret file atau klik untuk upload</p>
+                    <p class="text-xs sm:text-sm text-gray-600">Format: CSV, XLSX, atau XLS</p>
+                    <input type="file" id="csv-file-input" class="hidden" accept=".csv,.xlsx,.xls" />
+                </div>
+
+                <div id="selected-file-info" class="hidden bg-blue-50 border border-primary-blue rounded-lg p-3 sm:p-4">
+                    <p class="text-xs sm:text-sm text-gray-700">File terpilih: <span id="selected-file-name" class="font-bold text-primary-dark">-</span></p>
+                </div>
+
+                <!-- Preview Tabel -->
+                <div id="csv-preview" class="hidden bg-gray-50 border border-gray-300 rounded-lg p-3 sm:p-4">
+                    <h4 class="text-sm font-bold text-gray-800 mb-2">Preview Data (5 baris pertama):</h4>
+                    <div class="overflow-x-auto">
+                        <table class="text-xs w-full">
+                            <thead id="preview-header" class="bg-gray-200"></thead>
+                            <tbody id="preview-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div id="csv-progress" class="hidden">
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Status Analisis:</p>
+                    <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                        <div id="csv-progress-bar" class="bg-primary-blue h-full transition-all duration-300 flex items-center justify-center">
+                            <span id="csv-progress-text" class="text-xs font-bold text-white">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-2 sm:gap-3 flex-wrap">
+                    <button id="csv-upload-btn" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2 sm:py-3 bg-primary-blue text-white rounded-lg font-bold hover:bg-primary-dark transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
+                        <i data-lucide="play" class="w-3 sm:w-4 h-3 sm:h-4"></i> Mulai Analisis Kolektif
+                    </button>
+                    <button id="csv-reset-btn" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2 sm:py-3 bg-gray-400 text-white rounded-lg font-bold hover:bg-gray-500 transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md">
+                        <i data-lucide="rotate-ccw" class="w-3 sm:w-4 h-3 sm:h-4"></i> Reset
+                    </button>
+                    <button id="download-template-csv" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md">
+                        <i data-lucide="download" class="w-3 sm:w-4 h-3 sm:h-4"></i> Template CSV
+                    </button>
+                    <button id="download-template-excel" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md">
+                        <i data-lucide="download" class="w-3 sm:w-4 h-3 sm:h-4"></i> Template Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hasil Analisis -->
+        <div id="result" hidden class="mt-6 sm:mt-10 bg-gradient-to-br from-blue-50 to-primary-light p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-xl border-l-4 border-primary-blue">
+            <h3 id="result-label" class="text-xl sm:text-3xl font-bold text-primary-dark mb-3 sm:mb-4">-</h3>
+            <p id="result-explanation" class="text-sm sm:text-base text-gray-700 mb-4 sm:mb-6 leading-relaxed">-</p>
+            
+            <div class="mb-4 sm:mb-6">
+                <h4 class="font-bold text-primary-dark mb-2 sm:mb-3 text-sm sm:text-base">Persentase Prediksi:</h4>
+                <div id="result-probs" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-primary-dark mb-2 sm:mb-3 text-sm sm:text-base">Rekomendasi untuk Guru:</h4>
+                <ul id="result-tips" class="list-disc list-inside space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-700"></ul>
+            </div>
+
+            <div class="mt-4 sm:mt-6 flex gap-2 sm:gap-3 flex-wrap">
+                <button id="download-results-excel" class="px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md">
+                    <i data-lucide="download" class="w-3 sm:w-4 h-3 sm:h-4"></i> Unduh Hasil Excel
+                </button>
+                <button id="download-results-csv" class="px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md">
+                    <i data-lucide="download" class="w-3 sm:w-4 h-3 sm:h-4"></i> Unduh Hasil CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabel Hasil Kolektif -->
+        <div id="detailed-results-section" class="hidden mt-6 sm:mt-10">
+            <h3 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-dark">Hasil Analisis Kolektif</h3>
+            <div class="overflow-x-auto bg-white rounded-lg shadow-lg">
+                <table id="detailed-results-table">
+                    <thead>
+                        <tr>
+                            <th>Nama Siswa</th>
+                            <th class="text-center">Kelas</th>
+                            <th>Tipe Belajar</th>
+                            <th class="text-center">Visual %</th>
+                            <th class="text-center">Auditori %</th>
+                            <th class="text-center">Kinestetik %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailed-results-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Hapus duplikasi script manual (baris 896-977), sisakan hanya link ke external script.js -->
+    <script src="script.js"></script>
+</body>
+</html>
